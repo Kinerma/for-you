@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Just for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&family=Lora:wght@600;700&family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: tender, playful, unhurried — a love note, not a form
+   IDEA: a postcard from Macau — Senado Square's wave pavement, a pastel facade, the lotus
+   PICTURE: a big lotus rising over calçada waves; during the quiz the card itself is the picture
+   COLOUR and TYPE: facade yellow ground, jade green support, lotus pink accent; Fraunces + Nunito, LXGW WenKai TC for Chinese
+   LAYOUT: one calm column, a single question card at a time, answers fold away as she goes */
+:root{color-scheme:light dark;
+--bg:light-dark(#f7d774,#0f2a25);--paper:light-dark(#fffaf0,#163a33);--ink:light-dark(#1f2a27,#f4efe2);
+--soft:light-dark(#5a6560,#b9c9c2);--jade:light-dark(#0d6e5c,#7fd3bd);--pink:light-dark(#d9456f,#ff8fae);
+--line:light-dark(#e8dcc0,#2b5249);--wave:light-dark(#1f2a27,#f4efe2);--chip:light-dark(#fff3d6,#1d463e)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 Nunito,"LXGW WenKai TC",system-ui,sans-serif;overflow-x:clip;min-height:100vh}
+:lang(zh) body,body.zh{font-family:"LXGW WenKai TC",Nunito,system-ui,sans-serif}
+.band{padding:clamp(20px,4vw,56px) max(5vw,16px)}
+h1,h2{font-family:Fraunces,"LXGW WenKai TC",Georgia,serif;font-weight:700;line-height:1.08;text-wrap:balance;margin:0}
+body.zh h1,body.zh h2{font-family:"LXGW WenKai TC",Fraunces,serif}
+body.ru h1,body.ru h2,body.ru .mark{font-family:Lora,Georgia,serif}
+h1{font-size:clamp(34px,6vw,52px)}h2{font-size:clamp(24px,4vw,32px)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px max(5vw,16px)}
+.mark{font-family:Fraunces,serif;font-weight:700;font-size:18px;color:var(--jade);display:flex;align-items:center;gap:8px}
+.mark svg{width:26px;height:26px}
+.lang{display:flex;background:var(--paper);border-radius:999px;padding:4px;box-shadow:0 1px 0 var(--line)}
+.lang button{border:0;background:none;color:var(--soft);font:600 15px Nunito,"LXGW WenKai TC",sans-serif;min-height:36px;padding:0 14px;border-radius:999px;cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--jade);color:var(--paper)}
+button:focus-visible,textarea:focus-visible,input:focus-visible,.opt:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
+.hero{display:grid;justify-items:center;text-align:center;gap:18px;padding-top:4px}
+.fig{position:relative;width:min(100%,520px);aspect-ratio:13/9}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.hero p{max-width:34ch;margin:0 auto;font-size:18px;color:var(--soft)}
+.btn{border:0;background:var(--jade);color:var(--paper);font:700 17px Nunito,"LXGW WenKai TC",sans-serif;min-height:52px;padding:0 30px;border-radius:999px;cursor:pointer;box-shadow:0 4px 0 light-dark(#09503f,#3f9c86);transition:transform .15s}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 light-dark(#09503f,#3f9c86)}
+.btn:disabled{opacity:.45;cursor:default}
+.ghost{border:0;background:none;color:var(--soft);font:600 15px Nunito,"LXGW WenKai TC",sans-serif;min-height:44px;padding:0 10px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.wrap{max-width:640px;margin:0 auto}
+.prog{display:flex;align-items:center;gap:12px;margin-bottom:14px;color:var(--ink);font-size:14px;font-weight:600}
+.bar{flex:1;height:10px;border-radius:99px;background:light-dark(#ecc85a,#0b201c);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pink);border-radius:99px;transition:width .5s ease}
+.card{background:var(--paper);border-radius:28px;padding:clamp(22px,4vw,36px);box-shadow:0 18px 40px -24px rgba(40,30,0,.45),0 2px 0 var(--line)}
+.card.in{animation:rise .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.sec{display:inline-flex;align-items:center;gap:8px;color:var(--jade);font-weight:700;font-size:14px;margin-bottom:10px}
+.sec svg{width:18px;height:18px}
+.hint{color:var(--soft);font-size:15px;margin:8px 0 0}
+.opts{display:grid;gap:10px;margin-top:20px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:2px solid var(--line);background:var(--chip);color:var(--ink);font:600 16px Nunito,"LXGW WenKai TC",sans-serif;min-height:52px;padding:10px 16px;border-radius:18px;cursor:pointer;transition:border-color .15s,background .15s}
+.opt::before{content:"";flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--soft)}
+.opt.many::before{border-radius:6px}
+.opt[aria-pressed=true]{border-color:var(--pink);background:light-dark(#ffe4ec,#4a2333)}
+.opt[aria-pressed=true]::before{background:var(--pink);border-color:var(--pink);box-shadow:inset 0 0 0 3px var(--chip)}
+textarea,input[type=text]{width:100%;margin-top:18px;border:2px solid var(--line);background:var(--chip);color:var(--ink);font:16px/1.5 Nunito,"LXGW WenKai TC",sans-serif;padding:14px 16px;border-radius:18px;resize:vertical}
+textarea{min-height:130px}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;flex-wrap:wrap}
+.nav .r{display:flex;gap:6px;align-items:center;margin-inline-start:auto}
+.trail{margin-top:22px;display:grid;gap:8px}
+.trail div{background:light-dark(rgba(255,250,240,.55),rgba(22,58,51,.6));border-radius:16px;padding:10px 14px;font-size:14px;color:var(--soft)}
+.trail b{color:var(--ink);font-weight:700}
+.done{text-align:center;display:grid;gap:16px;justify-items:center}
+.done .fig{width:min(100%,300px)}
+.sum{text-align:start;width:100%;display:grid;gap:12px;margin-top:8px}
+.sum div{background:var(--chip);border-radius:18px;padding:12px 16px}
+.sum small{display:block;color:var(--soft);font-size:14px}
+.status{font-weight:700;color:var(--jade)}
+.waves{height:46px;background:var(--wave);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='46'%3E%3Cpath d='M0 10 Q20 0 40 10 T80 10 V18 Q60 8 40 18 T0 18Z M0 30 Q20 20 40 30 T80 30 V38 Q60 28 40 38 T0 38Z'/%3E%3C/svg%3E") repeat-x;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='46'%3E%3Cpath d='M0 10 Q20 0 40 10 T80 10 V18 Q60 8 40 18 T0 18Z M0 30 Q20 20 40 30 T80 30 V38 Q60 28 40 38 T0 38Z'/%3E%3C/svg%3E") repeat-x;opacity:.85;margin-top:40px}
+.owner{background:var(--paper);border-radius:24px;padding:22px;margin-top:24px}
+.owner h2{font-size:24px;margin-bottom:10px}
+.owner .entry{border-top:1px solid var(--line);padding:12px 0}
+.owner .entry p{margin:4px 0;font-size:15px}
+.owner .entry small{color:var(--soft)}
+.hr{display:flex;align-items:center;gap:8px}
+.homeb{border:0;background:var(--paper);color:var(--jade);font:700 15px Nunito,"LXGW WenKai TC",sans-serif;min-height:44px;padding:0 16px;border-radius:999px;cursor:pointer;box-shadow:0 1px 0 var(--line)}
+.modal{position:fixed;inset:0;background:rgba(20,30,25,.5);display:grid;place-items:center;padding:16px;z-index:10;animation:fade .2s}
+.mbox{background:var(--paper);border-radius:26px;padding:clamp(22px,4vw,32px);max-width:440px;width:100%;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.mbox h2{font-size:26px}
+.mbtns{display:grid;gap:10px;margin-top:20px}
+.btn.warn{background:var(--pink);box-shadow:0 4px 0 light-dark(#a8304f,#c2617c)}
+@keyframes fade{from{opacity:0}}
+.opts input[type=text]{margin-top:0}
+[hidden]{display:none!important}
+.petal{animation:sway 6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes sway{50%{transform:rotate(3deg)}}
+.float{animation:drift 7s ease-in-out infinite}
+@keyframes drift{50%{transform:translateY(-8px)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:600px){body{font-size:16px}.mark span{display:none}.lang button{padding:0 10px}.top{padding-block:10px}.card{border-radius:22px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc2d3"/><stop offset="1" stop-color="#e0507a"/></linearGradient>
+    <linearGradient id="pg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe0e8"/><stop offset="1" stop-color="#f07a9b"/></linearGradient>
+    <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2fa489"/><stop offset="1" stop-color="#0b5a4a"/></linearGradient>
+    <path id="pt" d="M0 0 C-26 -30 -22 -78 0 -104 C22 -78 26 -30 0 0Z"/>
+    <symbol id="mini" viewBox="-40 -60 80 70"><g fill="currentColor"><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z"/><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z" transform="rotate(-40) scale(.85)" opacity=".8"/><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z" transform="rotate(40) scale(.85)" opacity=".8"/></g></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="mark"><svg viewBox="-40 -60 80 70" style="color:var(--pink)"><g fill="currentColor"><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z"/><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z" transform="rotate(-40) scale(.85)" opacity=".8"/><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z" transform="rotate(40) scale(.85)" opacity=".8"/></g></svg><span data-t="brand"></span></div>
+  <div class="hr"><button class="homeb" id="home" type="button" hidden data-t="home"></button>
+  <div class="lang" role="group" aria-label="Language">
+    <button id="lEn" type="button" data-l="en">EN</button><button id="lZh" type="button" data-l="zh">繁中</button><button id="lRu" type="button" data-l="ru">RU</button>
+  </div></div>
+</header>
+
+<section id="intro" class="band hero">
+  <div class="fig">
+    <svg viewBox="0 0 520 360" role="img" aria-label="A lotus over wavy pavement">
+      <ellipse cx="260" cy="300" rx="230" ry="44" fill="var(--jade)" opacity=".18"/>
+      <g fill="none" stroke="var(--wave)" stroke-width="9" stroke-linecap="round" opacity=".8">
+        <path d="M20 300 Q85 270 150 300 T280 300 T410 300 T540 300"/>
+        <path d="M-10 330 Q55 300 120 330 T250 330 T380 330 T510 330" opacity=".55"/>
+      </g>
+      <g transform="translate(260 282)">
+        <ellipse cx="-96" cy="6" rx="92" ry="20" fill="url(#lg)"/>
+        <ellipse cx="104" cy="8" rx="84" ry="18" fill="url(#lg)"/>
+        <path d="M-96 6 L-30 -6" stroke="#0a4c3e" stroke-width="3"/>
+        <g class="petal"><use href="#pt" fill="url(#pg)" transform="rotate(-72) scale(.9)"/></g>
+        <g class="petal"><use href="#pt" fill="url(#pg)" transform="rotate(72) scale(.9)"/></g>
+        <use href="#pt" fill="url(#pg)" transform="rotate(-48) scale(1.05)"/>
+        <use href="#pt" fill="url(#pg)" transform="rotate(48) scale(1.05)"/>
+        <use href="#pt" fill="url(#pg2)" transform="rotate(-22) scale(1.2)"/>
+        <use href="#pt" fill="url(#pg2)" transform="rotate(22) scale(1.2)"/>
+        <use href="#pt" fill="url(#pg2)" transform="scale(1.32)"/>
+        <path d="M0 -10 C-6 -60 -4 -110 0 -132" stroke="#fff" stroke-width="2.5" opacity=".55" fill="none"/>
+        <ellipse cx="0" cy="-4" rx="30" ry="9" fill="#f6b73c"/>
+      </g>
+      <g class="float" fill="var(--pink)" opacity=".75">
+        <use href="#pt" transform="translate(90 120) rotate(-30) scale(.16)"/>
+        <use href="#pt" transform="translate(440 90) rotate(40) scale(.13)"/>
+        <use href="#pt" transform="translate(400 190) rotate(-60) scale(.1)"/>
+      </g>
+      <g class="float" fill="var(--paper)">
+        <circle cx="140" cy="70" r="5"/><circle cx="380" cy="50" r="4"/><circle cx="60" cy="210" r="3"/>
+      </g>
+    </svg>
+  </div>
+  <h1 data-t="title"></h1>
+  <p data-t="sub"></p>
+  <button class="btn" id="start" type="button" data-t="start"></button>
+  <button class="ghost" id="resume" type="button" hidden data-t="resume"></button>
+</section>
+
+<main id="quiz" class="band" hidden>
+  <div class="wrap">
+    <div class="prog"><span id="count"></span><div class="bar"><i id="fill"></i></div></div>
+    <div id="card" class="card"></div>
+    <div id="trail" class="trail"></div>
+  </div>
+</main>
+
+<section id="done" class="band" hidden>
+  <div class="wrap card done">
+    <div class="fig"><svg viewBox="0 0 520 360" aria-hidden="true"><g transform="translate(260 300)"><use href="#pt" fill="url(#pg)" transform="rotate(-48) scale(1.3)"/><use href="#pt" fill="url(#pg)" transform="rotate(48) scale(1.3)"/><use href="#pt" fill="url(#pg2)" transform="rotate(-22) scale(1.5)"/><use href="#pt" fill="url(#pg2)" transform="rotate(22) scale(1.5)"/><use href="#pt" fill="url(#pg2)" transform="scale(1.65)"/><ellipse cy="-4" rx="36" ry="10" fill="#f6b73c"/></g></svg></div>
+    <h2 data-t="thanks"></h2>
+    <p class="hint" data-t="thanksSub"></p>
+    <p class="status" id="status"></p>
+    <button class="btn" id="copy" type="button" data-t="copy"></button>
+    <div class="sum" id="sum"></div>
+    <button class="ghost" id="again" type="button" data-t="again"></button>
+  </div>
+</section>
+
+<section class="band" id="ownerBand" hidden>
+  <div class="wrap owner">
+    <h2>Её ответы</h2>
+    <p class="hint">Этот блок видишь только ты, как владелец страницы.</p>
+    <div id="ownerList"><p class="hint">Загружаю…</p></div>
+  </div>
+</section>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mT">
+  <div class="mbox"><h2 id="mT" data-t="mTitle"></h2><p class="hint" data-t="mText"></p>
+  <div class="mbtns"><button class="btn" id="mKeep" type="button" data-t="keep"></button>
+  <button class="btn warn" id="mReset" type="button" data-t="reset"></button>
+  <button class="ghost" id="mCancel" type="button" data-t="cancel"></button></div></div>
+</div>
+<div class="waves" aria-hidden="true"></div>
+
+<script>
+{
+const T={
+ en:{brand:"for you",title:"A few questions, just for you",sub:"I want to know you better, the little things and the big ones. Take your time, there are no wrong answers.",start:"Let's begin",resume:"Continue where you left off",next:"Next",skip:"Skip",back:"Back",finish:"Finish",of:(a,b)=>a+" of "+b,ph:"Write anything you like…",other:"Something else",otherPh:"Tell me…",upTo:"Choose as many as you like",home:"Home",mTitle:"Go back to the start?",mText:"Do you want to keep your answers so you can continue later, or clear everything?",keep:"Keep my answers",reset:"Clear all answers",cancel:"Stay here",thanks:"Thank you",thanksSub:"I'll read every word, slowly.",copy:"Copy my answers",copied:"Copied, now send it to me",saved:"Your answers have reached me.",notSaved:"Tap the button below and send me your answers.",again:"Start again",skipped:"(skipped)",
+  secs:{little:"Little things",values:"What matters",moments:"Moments",dreams:"Dreams"}},
+ zh:{brand:"給你的",title:"幾個問題，只想問你",sub:"我想更了解你，小事和大事都想知道。慢慢答，沒有錯的答案。",start:"開始吧",resume:"從上次停下的地方繼續",next:"下一題",skip:"跳過",back:"上一題",finish:"完成",of:(a,b)=>"第 "+a+" 題，共 "+b+" 題",ph:"想寫甚麼都可以…",other:"其他",otherPh:"告訴我…",upTo:"可以選多個",home:"主頁",mTitle:"返回主頁？",mText:"你想保留答案、之後再繼續，還是全部清除？",keep:"保留我的答案",reset:"清除所有答案",cancel:"留在這裡",thanks:"謝謝你",thanksSub:"每一個字我都會慢慢看。",copy:"複製我的答案",copied:"已複製，傳給我吧",saved:"你的答案已經傳給我了。",notSaved:"按下面的按鈕，把答案傳給我吧。",again:"重新開始",skipped:"（跳過）",
+  secs:{little:"小事情",values:"重要的事",moments:"回憶",dreams:"夢想"}},
+ ru:{brand:"для тебя",title:"Несколько вопросов, только для тебя",sub:"Хочу узнать тебя лучше: и мелочи, и важное. Отвечай не спеша, неправильных ответов здесь нет.",start:"Начнём",resume:"Продолжить с того же места",next:"Дальше",skip:"Пропустить",back:"Назад",finish:"Готово",of:(a,b)=>a+" из "+b,ph:"Напиши всё, что захочется…",other:"Другое",otherPh:"Расскажи…",upTo:"Можно выбрать несколько",home:"На главную",mTitle:"Вернуться на главную?",mText:"Сохранить ответы, чтобы продолжить потом, или стереть всё?",keep:"Сохранить ответы",reset:"Сбросить все ответы",cancel:"Остаться",thanks:"Спасибо",thanksSub:"Я прочитаю каждое слово, не торопясь.",copy:"Скопировать мои ответы",copied:"Скопировано, теперь отправь мне",saved:"Твои ответы уже у меня.",notSaved:"Нажми кнопку ниже и отправь мне свои ответы.",again:"Начать заново",skipped:"(пропущено)",
+  secs:{little:"Мелочи",values:"Что важно",moments:"Моменты",dreams:"Мечты"}}
+};
+const LI={en:0,zh:1,ru:2};
+const Q=[
+ {id:"name",s:"little",type:"text",short:true,en:"First things first: what do you like to be called?",zh:"先問一個簡單的：你喜歡別人怎樣稱呼你？",ru:"Начнём с простого: как тебе нравится, чтобы тебя называли?"},
+ {id:"sunday",s:"little",type:"pick",en:"Your perfect lazy Sunday looks like…",zh:"你理想中慵懶的星期日是怎樣的？",ru:"Твоё идеальное ленивое воскресенье — это…",
+  opts:[["Sleeping in, then a slow café","睡到自然醒，再去咖啡店慢慢坐","Выспаться, а потом неспешно посидеть в кафе"],["Exploring somewhere new","去一個新地方探索","Поехать куда-нибудь, где ещё не была"],["Cooking something nice at home","在家煮一頓好吃的","Приготовить дома что-нибудь вкусное"],["Movies, blankets and snacks","看電影、蓋被子、吃零食","Фильмы, плед и вкусняшки"],["Out with friends","和朋友出去玩","Гулять с друзьями"]]},
+ {id:"hobby",s:"little",type:"text",en:"What's a hobby that makes you lose track of time?",zh:"有甚麼興趣會讓你忘記時間？",ru:"За каким занятием ты забываешь о времени?"},
+ {id:"drink",s:"little",type:"pick",en:"If you were a drink, which one would you be?",zh:"如果你是一種飲品，你會是哪一種？",ru:"Если бы ты была напитком, то каким?",
+  opts:[["Milk tea","奶茶","Чай с молоком"],["Coffee","咖啡","Кофе"],["Fresh fruit juice","鮮榨果汁","Свежевыжатый сок"],["A pot of good tea","一壺好茶","Чайник хорошего чая"],["Bubble tea","珍珠奶茶","Бабл-ти"]]},
+ {id:"food",s:"little",type:"text",en:"Your favourite food in Macau, and where should we go to eat it together?",zh:"你在澳門最喜歡吃甚麼？我們應該一起去哪裡吃？",ru:"Твоя любимая еда в Макао? И куда нам сходить её попробовать вместе?"},
+ {id:"rel",s:"values",type:"pick",en:"What matters most to you in a relationship?",zh:"在一段感情裡，你最看重甚麼？",ru:"Что для тебя важнее всего в отношениях?",
+  opts:[["Honesty","誠實","Честность"],["Laughing together","一起笑","Смеяться вместе"],["Patience","耐心","Терпение"],["Time together","相處的時間","Время вместе"],["Space to be yourself","做自己的空間","Возможность оставаться собой"],["Little surprises","小驚喜","Маленькие сюрпризы"],["Deep talks","深入的談話","Разговоры по душам"]]},
+ {id:"love",s:"values",type:"pick",en:"When do you feel the most loved?",zh:"怎樣會讓你最感受到被愛？",ru:"Когда ты сильнее всего чувствуешь, что тебя любят?",
+  opts:[["When someone tells me with words","對方用說話表達的時候","Когда об этом говорят словами"],["When we spend real time together","我們真正一起度過時間的時候","Когда мы по-настоящему проводим время вместе"],["Small gifts that show they thought of me","小禮物，代表對方有想著我","Маленькие подарки, которые показывают, что обо мне думали"],["When they take care of me and help","對方照顧我、幫我的時候","Когда обо мне заботятся и помогают"],["Hugs and being close","擁抱和親近的時候","Объятия и близость"]]},
+ {id:"goodday",s:"values",type:"text",en:"What makes a day a good day for you?",zh:"對你來說，怎樣才算是美好的一天？",ru:"Какой день для тебя хороший?"},
+ {id:"believe",s:"values",type:"text",en:"Something you believe in that most people don't think about much?",zh:"有甚麼是你很相信、但大多數人很少想到的？",ru:"Во что ты веришь, хотя большинство людей об этом почти не задумывается?"},
+ {id:"child",s:"moments",type:"text",en:"A childhood memory that still makes you smile?",zh:"有沒有一個童年回憶，到現在想起來還會笑？",ru:"Какое детское воспоминание до сих пор вызывает у тебя улыбку?"},
+ {id:"proud",s:"moments",type:"text",en:"A moment when you were really proud of yourself?",zh:"有哪一刻你真的為自己感到驕傲？",ru:"Когда ты по-настоящему гордилась собой?"},
+ {id:"place",s:"moments",type:"text",en:"A place in Macau that means something to you, and why?",zh:"澳門有沒有一個對你有特別意義的地方？為甚麼？",ru:"Есть ли в Макао место, которое много для тебя значит? Почему?"},
+ {id:"travel",s:"dreams",type:"text",en:"Where in the world do you dream of going?",zh:"你最想去世界上哪個地方？",ru:"Куда в мире ты мечтаешь поехать?"},
+ {id:"learn",s:"dreams",type:"text",en:"If you could learn one thing instantly, what would it be?",zh:"如果可以馬上學會一樣東西，你會選甚麼？",ru:"Если бы можно было мгновенно чему-то научиться, что бы ты выбрала?"},
+ {id:"wish",s:"dreams",type:"text",en:"What's one thing you wish people understood about you?",zh:"有甚麼是你希望別人更了解你的？",ru:"Что ты хотела бы, чтобы люди лучше понимали в тебе?"},
+ {id:"ask",s:"dreams",type:"text",en:"And last: is there anything you'd like to ask me?",zh:"最後：有甚麼想問我的嗎？",ru:"И напоследок: хочешь что-нибудь спросить у меня?"}
+];
+const OTHER=-1, KEY="forYouQuiz2";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let st={lang:(n=>n.startsWith("zh")?"zh":n.startsWith("ru")?"ru":"en")((navigator.language||"").toLowerCase()),i:0,a:{},done:false};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.a)st=Object.assign(st,s)}catch(e){}
+if(!T[st.lang])st.lang="en";
+let db=null,me=null,chain=Promise.resolve(),savedOk=null;
+const L=()=>T[st.lang];
+
+function isEmpty(q,a){
+  if(!a)return true;
+  if(q.type==="text")return !(a.t&&a.t.trim());
+  return !((a.v||[]).length||(a.o&&a.t&&a.t.trim()));
+}
+function fmt(q,a,lang){
+  if(isEmpty(q,a))return T[lang].skipped;
+  if(q.type==="text")return a.t.trim();
+  const p=(a.v||[]).slice().sort((x,y)=>x-y).map(v=>q.opts[v][LI[lang]]);
+  if(a.o&&a.t&&a.t.trim())p.push(T[lang].other+": "+a.t.trim());
+  return p.join("; ");
+}
+function persist(){
+  try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
+  if(!db||!me)return;
+  const payload={lang:st.lang,done:st.done,updated:Date.now(),answers:Q.map(q=>({q:q.ru,a:fmt(q,st.a[q.id],"ru")})).filter((x,k)=>!isEmpty(Q[k],st.a[Q[k].id]))};
+  chain=chain.then(()=>db.collection("answers").doc(me).set(payload)).then(()=>{savedOk=true;showStatus()}).catch(()=>{savedOk=false;showStatus()});
+}
+function showStatus(){if(!$("done").hidden)$("status").textContent=savedOk?L().saved:L().notSaved}
+
+function texts(){
+  document.documentElement.lang={zh:"zh-Hant",ru:"ru",en:"en"}[st.lang];
+  document.body.classList.toggle("zh",st.lang==="zh");document.body.classList.toggle("ru",st.lang==="ru");
+  document.querySelectorAll("[data-t]").forEach(el=>{el.textContent=L()[el.dataset.t]});
+  document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===st.lang));
+  $("resume").hidden=!(st.i>0&&!st.done);
+}
+function show(view){["intro","quiz","done"].forEach(v=>$(v).hidden=v!==view);$("home").hidden=view==="intro";texts()}
+
+function renderQ(anim=true){
+  const q=Q[st.i],l=L(),a=st.a[q.id]||{},li=LI[st.lang];
+  $("count").textContent=l.of(st.i+1,Q.length);
+  $("fill").style.width=(st.i/Q.length*100)+"%";
+  let body="";
+  if(q.type==="text"){
+    body=q.short?`<input type="text" id="ta" maxlength="60" value="${esc(a.t)}" placeholder="${esc(l.ph)}">`:`<textarea id="ta" maxlength="1500" placeholder="${esc(l.ph)}">${esc(a.t)}</textarea>`;
+  }else{
+    const sel=a.v||[];
+    body=`<p class="hint">${l.upTo}</p><div class="opts">`+q.opts.map((o,k)=>`<button type="button" class="opt many" data-k="${k}" aria-pressed="${sel.includes(k)}">${esc(o[li])}</button>`).join("")+
+      `<button type="button" class="opt many" id="othB" aria-pressed="${!!a.o}">${esc(l.other)}</button>`+
+      `<input type="text" id="oth" maxlength="300" placeholder="${esc(l.otherPh)}" value="${esc(a.t)}" ${a.o?"":"hidden"}></div>`;
+  }
+  const last=st.i===Q.length-1;
+  $("card").innerHTML=`<div class="sec"><svg viewBox="-40 -60 80 70" style="color:var(--pink)"><g fill="currentColor"><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z"/><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z" transform="rotate(-40) scale(.85)" opacity=".8"/><path d="M0 4 C-12 -10 -10 -38 0 -50 C10 -38 12 -10 0 4Z" transform="rotate(40) scale(.85)" opacity=".8"/></g></svg>${esc(l.secs[q.s])}</div>
+    <h2>${esc(q[st.lang])}</h2>${body}
+    <div class="nav">${st.i>0?`<button class="ghost" id="back" type="button">${l.back}</button>`:""}
+    <div class="r"><button class="btn" id="next" type="button">${last?l.finish:l.next}</button></div></div>`;
+  if(anim){const c=$("card");c.classList.remove("in");void c.offsetWidth;c.classList.add("in")}
+  wire(q);trail();
+}
+function cur(q){return st.a[q.id]||(st.a[q.id]=q.type==="text"?{t:""}:{v:[],o:false,t:""})}
+function wire(q){
+  const ta=$("ta"),oth=$("oth");
+  if(ta){ta.addEventListener("input",()=>{cur(q).t=ta.value});ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&(q.short||e.metaKey||e.ctrlKey)){e.preventDefault();go(1)}});setTimeout(()=>ta.focus({preventScroll:true}),60)}
+  if(oth)oth.addEventListener("input",()=>{const a=cur(q);a.t=oth.value;a.o=true});
+  $("card").querySelectorAll(".opt[data-k]").forEach(b=>b.addEventListener("click",()=>{
+    const a=cur(q),k=+b.dataset.k;
+    a.v=a.v.includes(k)?a.v.filter(x=>x!==k):a.v.concat(k);
+    b.setAttribute("aria-pressed",a.v.includes(k));
+  }));
+  const ob=$("othB");
+  if(ob)ob.addEventListener("click",()=>{const a=cur(q);a.o=!a.o;ob.setAttribute("aria-pressed",a.o);oth.hidden=!a.o;if(a.o)oth.focus()});
+  const bk=$("back");if(bk)bk.addEventListener("click",()=>go(-1));
+  $("next").addEventListener("click",()=>go(1));
+}
+function trail(){
+  const items=[];
+  for(let k=st.i-1;k>=Math.max(0,st.i-2);k--){const q=Q[k];items.push(`<div>${esc(q[st.lang])}<br><b>${esc(fmt(q,st.a[q.id],st.lang))}</b></div>`)}
+  $("trail").innerHTML=items.join("");
+}
+function go(d){
+  st.i=Math.max(0,Math.min(Q.length,st.i+d));
+  if(st.i>=Q.length){st.i=Q.length-1;st.done=true;persist();finish();return}
+  persist();renderQ();window.scrollTo({top:0,behavior:"smooth"});
+}
+function summaryText(){
+  return Q.map(q=>"• "+q[st.lang]+"\n  "+fmt(q,st.a[q.id],st.lang)).join("\n\n");
+}
+function finish(){
+  show("done");
+  $("sum").innerHTML=Q.filter(q=>!isEmpty(q,st.a[q.id])).map(q=>`<div><small>${esc(q[st.lang])}</small>${esc(fmt(q,st.a[q.id],st.lang))}</div>`).join("");
+  $("status").textContent=savedOk===true?L().saved:L().notSaved;
+  window.scrollTo({top:0});
+}
+function setLang(x){st.lang=x;texts();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
+  if(!$("quiz").hidden)renderQ(false);if(!$("done").hidden)finish()}
+
+document.querySelectorAll(".lang button").forEach(b=>b.addEventListener("click",()=>setLang(b.dataset.l)));
+$("start").addEventListener("click",()=>{if(st.done||st.i===0){st={lang:st.lang,i:0,a:st.done?{}:st.a,done:false}}else{st.i=0}show("quiz");renderQ()});
+$("resume").addEventListener("click",()=>{show("quiz");renderQ()});
+$("again").addEventListener("click",()=>{st={lang:st.lang,i:0,a:{},done:false};persist();show("quiz");renderQ()});
+$("copy").addEventListener("click",async()=>{
+  try{await navigator.clipboard.writeText(summaryText());$("copy").textContent=L().copied}
+  catch(e){const t=document.createElement("textarea");t.value=summaryText();document.body.appendChild(t);t.select();try{document.execCommand("copy");$("copy").textContent=L().copied}catch(x){}t.remove()}
+});
+
+const hasAny=()=>Q.some(q=>!isEmpty(q,st.a[q.id]));
+function closeM(){$("modal").hidden=true;$("home").focus()}
+$("home").addEventListener("click",()=>{if(!hasAny()){show("intro");return}$("modal").hidden=false;$("mKeep").focus()});
+$("mCancel").addEventListener("click",closeM);
+$("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeM()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("modal").hidden)closeM()});
+$("mKeep").addEventListener("click",()=>{persist();$("modal").hidden=true;show("intro")});
+$("mReset").addEventListener("click",()=>{st={lang:st.lang,i:0,a:{},done:false};persist();$("modal").hidden=true;show("intro")});
+texts();
+if(st.done)finish();else show("intro");
+
+async function ownerView(){
+  $("ownerBand").hidden=false;
+  const box=$("ownerList");
+  const timer=setTimeout(()=>{box.innerHTML='<p class="hint">Не удалось загрузить ответы. Попробуй обновить страницу позже.</p>'},10000);
+  try{
+    const r=await db.collection("answers").get();
+    clearTimeout(timer);
+    const rows=(Array.isArray(r)?r:(r&&r.docs)||[]).map(d=>({id:d.id,data:typeof d.data==="function"?d.data():(d.data||d)}));
+    if(!rows.length){box.innerHTML='<p class="hint">Пока никто не ответил. Когда она пройдёт опрос, ответы появятся здесь.</p>';return}
+    let names={};try{const u=await claude.use("user");if(u)names=await u.profiles(rows.map(x=>x.id))||{}}catch(e){}
+    box.innerHTML=rows.sort((a,b)=>(b.data.updated||0)-(a.data.updated||0)).map(x=>{
+      const d=x.data,who=(names[x.id]&&names[x.id].name)||(x.id===me?"Ты (тест)":"Она");
+      return `<div class="entry"><b>${esc(who)}</b> <small>· ${d.updated?new Date(d.updated).toLocaleString("ru-RU"):""} · ${d.done?"закончила":"в процессе"} · язык: ${esc(d.lang)}</small>`+
+        (d.answers||[]).map(a=>`<p><small>${esc(a.q)}</small><br>${esc(a.a)}</p>`).join("")+`</div>`}).join("");
+  }catch(e){clearTimeout(timer);box.innerHTML='<p class="hint">Не удалось загрузить ответы.</p>'}
+}
+(async()=>{
+  try{
+    db=await claude.use("db");
+    const u=await claude.use("user");
+    if(u){me=db?await u.id():null;
+      if(st.i>0||st.done)persist();
+      if(db&&((await u.isOwner())??false))ownerView();}
+  }catch(e){}
+})();
+}
+</script>
+</body>
+</html>
