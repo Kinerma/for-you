@@ -8,6 +8,8 @@ enum RoomUpdate {
     case ideas([Idea])
     case coupons([Coupon])
     case swipeSessions([SwipeSession])
+    case hug(HugPresence)
+    case carePings([CarePing])
 }
 
 /// Отписка от слушателя (например, комментариев одной карточки).
@@ -50,4 +52,9 @@ protocol RoomBackend: AnyObject {
     func createSwipeSession(_ session: SwipeSession)
     func voteSwipe(sessionId: String, ideaId: String, like: Bool, for partner: Partner)
     func setSwipeMatch(sessionId: String, ideaId: String)
+
+    // Объятия и поддержка
+    func setHugHolding(_ holding: Bool, for partner: Partner, isNewHug: Bool)
+    func sendCarePing(_ ping: CarePing)
+    func markCarePingSeen(id: String)
 }

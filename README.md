@@ -82,7 +82,7 @@ index.html               старый сайт-опрос (GitHub Pages), не �
 
 - [x] **Модуль 1.** Скретч-купоны (вкладка «Сюрпризы», `Views/CouponsView.swift`, `Views/Components/ScratchCard.swift`) и реакции/приписки в «Наших ответах» (`Views/AnswerThreadView.swift`)
 - [x] **Модуль 2.** «Тиндер» для идей (`Views/SwipeMatchView.swift`) и колесо фортуны (`Views/WheelOfFortuneView.swift`) — кнопки «Выбрать вместе» и «Колесо» в Копилке идей
-- [ ] Модуль 3. Эффекты настроения и «Обнять на расстоянии»
+- [x] **Модуль 3.** Статусы настроения с оттенком карточки и «Отправить поддержку» (`Views/HomeView.swift`, `CareOverlay` в `Views/RootView.swift`), «Обнять на расстоянии» (`Views/HugCard.swift`, `Services/HeartbeatHaptics.swift`)
 - [ ] Модуль 4. «Насколько хорошо ты меня знаешь?»
 - [ ] Модуль 5. Полароиды с проявкой и капсула времени
 - [ ] Модуль 6. Карта воспоминаний и Doodle-виджет

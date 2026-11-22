@@ -3,7 +3,7 @@
 const { onDocumentWritten, onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getMessaging } = require("firebase-admin/messaging");
 
 // Регион должен совпадать с регионом базы Firestore (asia-east2 = Гонконг, ближе всего к Макао).
@@ -42,6 +42,16 @@ const TEXT = {
     ru: (n, t) => ["Match! 💞", `Вы оба хотите: ${t}`],
     zh_Hant: (n, t) => ["配對成功！💞", `你們都想去：${t}`],
     en: (n, t) => ["It's a match! 💞", `You both want: ${t}`],
+  },
+  hug: {
+    ru: (n, t) => ["Тебя обнимают прямо сейчас 🤗", `${n} держит кружок — обними в ответ`],
+    zh_Hant: (n, t) => ["有人正在抱住你 🤗", `${n} 按住了圓圈，快點回抱吧`],
+    en: (n, t) => ["You're being hugged right now 🤗", `${n} is holding the circle — hug back`],
+  },
+  care: {
+    ru: (n, t) => [`${n} шлёт тебе поддержку ${t}`, "Открой приложение 🤍"],
+    zh_Hant: (n, t) => [`${n} 送你一點關心 ${t}`, "打開 App 看看 🤍"],
+    en: (n, t) => [`${n} is sending you love ${t}`, "Open the app 🤍"],
   },
   idea: {
     ru: (n, t) => [`Новая идея от ${n}`, t],
@@ -124,4 +134,29 @@ exports.onSwipeMatch = onDocumentWritten("rooms/{roomId}/swipeSessions/{sessionI
   const title = (idea.exists && idea.get("title")) || "";
   // notify(from) шлёт второму партнёру, поэтому вызываем от имени каждого.
   await Promise.all([notify(roomId, "A", "match", title), notify(roomId, "B", "match", title)]);
+});
+
+// v2: «Обнять на расстоянии» — пуш, когда партнёр начал удерживать кружок (не чаще раза в минуту).
+exports.onHugPresence = onDocumentWritten("rooms/{roomId}/presence/hug", async (event) => {
+  const before = event.data.before.exists ? event.data.before.data() : {};
+  const after = event.data.after.exists ? event.data.after.data() : null;
+  if (!after) return;
+  const lastPush = after.lastPushAt ? after.lastPushAt.toMillis() : 0;
+  if (Date.now() - lastPush < 60 * 1000) return;
+  for (const p of ["A", "B"]) {
+    const key = `partner${p}Holding`;
+    if (after[key] && !before[key] && after.lastTriggeredBy === p) {
+      await notify(event.params.roomId, p, "hug");
+      await event.data.after.ref.update({ lastPushAt: FieldValue.serverTimestamp() });
+      return;
+    }
+  }
+});
+
+// v2: «Отправить поддержку».
+const CARE_EMOJI = { sakura: "🌸", hearts: "💗", hug_sparkle: "🤗" };
+exports.onCarePing = onDocumentCreated("rooms/{roomId}/carePings/{pingId}", async (event) => {
+  const data = event.data && event.data.data();
+  if (!data || !data.senderId) return;
+  await notify(event.params.roomId, data.senderId, "care", CARE_EMOJI[data.type] || "🤍");
 });

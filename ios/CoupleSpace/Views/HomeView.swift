@@ -6,6 +6,7 @@ struct HomeView: View {
     @Environment(LocalizationManager.self) private var loc
 
     @State private var editingMood = false
+    @State private var careSent = 0
 
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
@@ -19,6 +20,7 @@ struct HomeView: View {
                 TopBar(subtitle: greeting, title: session.name.isEmpty ? loc.t(.onbTitle) : session.name)
                 CountdownCard()
                 moodSection
+                HugCard()
                 QuestionOfDayCard()
             }
             .padding(.horizontal, 20)
@@ -40,7 +42,8 @@ struct HomeView: View {
                         name: loc.t(.me),
                         mood: store.moods[session.me],
                         placeholder: loc.t(.moodTapToSet),
-                        editable: true
+                        editable: true,
+                        owner: session.me
                     )
                 }
                 .buttonStyle(.plain)
@@ -49,11 +52,51 @@ struct HomeView: View {
                     name: store.partnerName(session.me.other) ?? loc.t(.partner),
                     mood: store.moods[session.me.other],
                     placeholder: loc.t(.moodNotSet),
-                    editable: false
+                    editable: false,
+                    owner: session.me.other
                 )
             }
+            supportRow
         }
+        .animation(.easeInOut, value: store.moods[session.me.other])
         .glassCard()
+        .sensoryFeedback(.success, trigger: careSent)
+    }
+
+    /// «Отправить поддержку»: появляется, когда у партнёра статус вроде «Устала» или «Скучаю».
+    @ViewBuilder
+    private var supportRow: some View {
+        if let status = store.moods[session.me.other]?.moodStatus, status.needsCare {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(loc.t(.sendSupport))
+                    .font(.appCaption.weight(.semibold))
+                    .foregroundStyle(Palette.rose)
+                HStack(spacing: 8) {
+                    ForEach(CarePing.Kind.allCases, id: \.self) { kind in
+                        Button {
+                            store.sendCare(kind, from: session.me)
+                            careSent += 1
+                        } label: {
+                            Text(CarePing(type: kind, senderId: session.me).emoji + " " + loc.t(careKey(kind)))
+                                .font(.appCaption.weight(.semibold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(SoftButtonStyle())
+                    }
+                }
+            }
+            .transition(.opacity.combined(with: .move(edge: .top)))
+        }
+    }
+
+    private func careKey(_ kind: CarePing.Kind) -> L {
+        switch kind {
+        case .sakura: return .careSakura
+        case .hearts: return .careHearts
+        case .hugSparkle: return .careHug
+        }
     }
 }
 
@@ -131,6 +174,19 @@ struct MoodTile: View {
     let mood: Mood?
     let placeholder: String
     let editable: Bool
+    var owner: Partner = .a
+
+    @Environment(LocalizationManager.self) private var loc
+
+    private var tint: Color { mood?.moodStatus?.tint ?? Color.white }
+
+    /// Статус (если выбран) + текст.
+    private var subtitle: String {
+        guard let mood else { return placeholder }
+        let status = mood.moodStatus?.title(loc.language, owner: owner)
+        let parts = [status, mood.text.isEmpty ? nil : mood.text].compactMap { $0 }
+        return parts.isEmpty ? " " : parts.joined(separator: " · ")
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -146,16 +202,20 @@ struct MoodTile: View {
             Text(name)
                 .font(.appSubheadline.weight(.semibold))
                 .lineLimit(1)
-            Text(mood.map { $0.text.isEmpty ? " " : $0.text } ?? placeholder)
+            Text(subtitle)
                 .font(.appCaption)
                 .foregroundStyle(Palette.inkSoft)
                 .lineLimit(2, reservesSpace: true)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.6), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(LinearGradient(colors: [Color.white.opacity(0.7), tint.opacity(0.9)],
+                                     startPoint: .topLeading, endPoint: .bottomTrailing))
+        }
         .contentTransition(.opacity)
-        .animation(.easeInOut, value: mood)
+        .animation(.easeInOut(duration: 0.8), value: mood)
     }
 }
 
@@ -169,12 +229,35 @@ struct MoodSheet: View {
 
     @State private var emoji = "😊"
     @State private var text = ""
+    @State private var status: MoodStatus?
     @State private var saved = 0
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        CardLabel(text: loc.t(.moodStatus), symbol: "sparkles")
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 8)], spacing: 8) {
+                            ForEach(MoodStatus.allCases) { item in
+                                let selected = status == item
+                                Button {
+                                    status = selected ? nil : item
+                                    if !selected { emoji = item.emoji }
+                                } label: {
+                                    Text("\(item.emoji) \(item.title(loc.language, owner: session.me))")
+                                        .font(.appSubheadline.weight(.semibold))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.75)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 9)
+                                        .background(Capsule().fill(selected ? item.tint : Color.white.opacity(0.7)))
+                                        .overlay(Capsule().strokeBorder(selected ? Palette.rose : .clear, lineWidth: 1.5))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 4), spacing: 10) {
                         ForEach(Mood.choices, id: \.self) { item in
                             Button { emoji = item } label: {
@@ -209,7 +292,7 @@ struct MoodSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(loc.t(.save)) {
-                        store.setMood(emoji: emoji, text: text.trimmingCharacters(in: .whitespaces), for: session.me)
+                        store.setMood(emoji: emoji, text: text.trimmingCharacters(in: .whitespaces), status: status, for: session.me)
                         saved += 1
                         dismiss()
                     }
@@ -223,6 +306,7 @@ struct MoodSheet: View {
             if let current {
                 emoji = current.emoji.isEmpty ? "😊" : current.emoji
                 text = current.text
+                status = current.moodStatus
             }
         }
     }

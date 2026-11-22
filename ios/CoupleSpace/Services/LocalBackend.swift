@@ -13,6 +13,8 @@ final class LocalBackend: RoomBackend {
         var coupons: [String: Coupon] = [:]
         var comments: [String: [QuizComment]] = [:]
         var swipeSessions: [String: SwipeSession] = [:]
+        var hug = HugPresence()
+        var carePings: [String: CarePing] = [:]
     }
 
     private var state = State()
@@ -128,6 +130,23 @@ final class LocalBackend: RoomBackend {
         commit()
     }
 
+    func setHugHolding(_ holding: Bool, for partner: Partner, isNewHug: Bool) {
+        switch partner {
+        case .a: state.hug.partnerAHolding = holding; state.hug.partnerAHoldingAt = Date()
+        case .b: state.hug.partnerBHolding = holding; state.hug.partnerBHoldingAt = Date()
+        }
+        if isNewHug { state.hug.lastTriggeredBy = partner }
+        state.hug.updatedAt = Date()
+        commit()
+    }
+
+    func sendCarePing(_ ping: CarePing) { state.carePings[ping.id] = ping; commit() }
+
+    func markCarePingSeen(id: String) {
+        state.carePings[id]?.seen = true
+        commit()
+    }
+
     func setSwipeMatch(sessionId: String, ideaId: String) {
         guard var session = state.swipeSessions[sessionId] else { return }
         session.status = .matched
@@ -156,6 +175,8 @@ final class LocalBackend: RoomBackend {
         onUpdate(.ideas(Array(state.ideas.values)))
         onUpdate(.coupons(Array(state.coupons.values)))
         onUpdate(.swipeSessions(Array(state.swipeSessions.values)))
+        onUpdate(.hug(state.hug))
+        onUpdate(.carePings(Array(state.carePings.values)))
     }
 
     private func fileURL(_ roomId: String) -> URL {

@@ -63,7 +63,8 @@ final class FirestoreBackend: RoomBackend {
                 result[partner] = Mood(
                     emoji: d["emoji"] as? String ?? "",
                     text: d["text"] as? String ?? "",
-                    updatedAt: (d["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
+                    updatedAt: (d["updatedAt"] as? Timestamp)?.dateValue() ?? Date(),
+                    status: d["status"] as? String
                 )
             }
             onUpdate(.moods(result))
@@ -157,6 +158,35 @@ final class FirestoreBackend: RoomBackend {
             }
             onUpdate(.swipeSessions(sessions))
         })
+
+        listeners.append(ref.collection("presence").document("hug").addSnapshotListener { snapshot, _ in
+            let d = snapshot?.data(with: .estimate) ?? [:]
+            onUpdate(.hug(HugPresence(
+                partnerAHolding: d["partnerAHolding"] as? Bool ?? false,
+                partnerBHolding: d["partnerBHolding"] as? Bool ?? false,
+                partnerAHoldingAt: (d["partnerAHoldingAt"] as? Timestamp)?.dateValue(),
+                partnerBHoldingAt: (d["partnerBHoldingAt"] as? Timestamp)?.dateValue(),
+                lastTriggeredBy: Partner(rawValue: d["lastTriggeredBy"] as? String ?? ""),
+                updatedAt: (d["updatedAt"] as? Timestamp)?.dateValue()
+            )))
+        })
+
+        listeners.append(ref.collection("carePings")
+            .order(by: "createdAt", descending: true)
+            .limit(to: 20)
+            .addSnapshotListener { snapshot, _ in
+                let pings: [CarePing] = (snapshot?.documents ?? []).compactMap { doc in
+                    let d = doc.data(with: .estimate)
+                    guard let type = CarePing.Kind(rawValue: d["type"] as? String ?? ""),
+                          let sender = Partner(rawValue: d["senderId"] as? String ?? "") else { return nil }
+                    return CarePing(
+                        id: doc.documentID, type: type, senderId: sender,
+                        createdAt: (d["createdAt"] as? Timestamp)?.dateValue() ?? Date(),
+                        seen: d["seen"] as? Bool ?? false
+                    )
+                }
+                onUpdate(.carePings(pings))
+            })
     }
 
     // MARK: Writes
@@ -188,6 +218,7 @@ final class FirestoreBackend: RoomBackend {
             $0.collection("moods").document(partner.rawValue).setData([
                 "emoji": mood.emoji,
                 "text": mood.text,
+                "status": mood.status.map { $0 as Any } ?? NSNull(),
                 "updatedAt": FieldValue.serverTimestamp(),
             ])
         }
@@ -330,6 +361,33 @@ final class FirestoreBackend: RoomBackend {
                 FieldPath(["votes\(partner.rawValue)", ideaId]): like,
             ])
         }
+    }
+
+    // MARK: Hug & care
+
+    func setHugHolding(_ holding: Bool, for partner: Partner, isNewHug: Bool) {
+        var data: [String: Any] = [
+            "partner\(partner.rawValue)Holding": holding,
+            "partner\(partner.rawValue)HoldingAt": FieldValue.serverTimestamp(),
+            "updatedAt": FieldValue.serverTimestamp(),
+        ]
+        if isNewHug { data["lastTriggeredBy"] = partner.rawValue }
+        write { $0.collection("presence").document("hug").setData(data, merge: true) }
+    }
+
+    func sendCarePing(_ ping: CarePing) {
+        write {
+            $0.collection("carePings").document(ping.id).setData([
+                "type": ping.type.rawValue,
+                "senderId": ping.senderId.rawValue,
+                "createdAt": FieldValue.serverTimestamp(),
+                "seen": false,
+            ])
+        }
+    }
+
+    func markCarePingSeen(id: String) {
+        write { $0.collection("carePings").document(id).updateData(["seen": true]) }
     }
 
     func setSwipeMatch(sessionId: String, ideaId: String) {

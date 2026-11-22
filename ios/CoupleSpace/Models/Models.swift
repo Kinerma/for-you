@@ -170,8 +170,126 @@ struct Mood: Codable, Hashable {
     var emoji: String
     var text: String
     var updatedAt: Date
+    var status: String? = nil   // ключ MoodStatus
+
+    var moodStatus: MoodStatus? { status.flatMap(MoodStatus.init(rawValue:)) }
 
     static let choices = ["😊", "🥰", "😌", "🥳", "😴", "🤔", "😢", "😤", "🤒", "🍵", "💪", "🌧️", "✨", "🫶", "🍜", "📚"]
+}
+
+/// Пресеты статусов (ТЗ v2, 1.3): у части из них карточка тонируется,
+/// а второму партнёру предлагается «Отправить поддержку».
+enum MoodStatus: String, CaseIterable, Identifiable, Codable {
+    case happy, lovey, calm, busy, missing, tired, stressed, sad, sick
+
+    var id: String { rawValue }
+
+    var emoji: String {
+        switch self {
+        case .happy: return "😊"
+        case .lovey: return "🥰"
+        case .calm: return "😌"
+        case .busy: return "📚"
+        case .missing: return "🥺"
+        case .tired: return "😮‍💨"
+        case .stressed: return "😣"
+        case .sad: return "😢"
+        case .sick: return "🤒"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .happy: return Palette.champagne
+        case .lovey: return Palette.sakura
+        case .calm: return Color(hex: 0xCFE3DE)
+        case .busy: return Palette.lavender
+        case .missing: return Color(hex: 0xE3D3F0)
+        case .tired: return Color(hex: 0xE8E1EA)
+        case .stressed: return Color(hex: 0xF5CFC9)
+        case .sad: return Color(hex: 0xD9E4F5)
+        case .sick: return Color(hex: 0xE3EFE9)
+        }
+    }
+
+    /// Статусы, при которых партнёру показывается «Отправить поддержку».
+    var needsCare: Bool {
+        switch self {
+        case .missing, .tired, .stressed, .sad, .sick: return true
+        default: return false
+        }
+    }
+
+    /// Текст статуса; в русском род зависит от того, чей статус (A — парень, B — девушка).
+    func title(_ lang: AppLanguage, owner: Partner) -> String {
+        let male = owner == .a
+        switch (self, lang) {
+        case (.happy, .ru): return "Радуюсь"
+        case (.happy, .zhHant): return "開心"
+        case (.happy, .en): return "Happy"
+        case (.lovey, .ru): return male ? "Влюблён" : "Влюблена"
+        case (.lovey, .zhHant): return "甜蜜"
+        case (.lovey, .en): return "In love"
+        case (.calm, .ru): return "Спокойствие"
+        case (.calm, .zhHant): return "平靜"
+        case (.calm, .en): return "Calm"
+        case (.busy, .ru): return male ? "Занят" : "Занята"
+        case (.busy, .zhHant): return "忙碌中"
+        case (.busy, .en): return "Busy"
+        case (.missing, .ru): return "Скучаю"
+        case (.missing, .zhHant): return "好想你"
+        case (.missing, .en): return "Missing you"
+        case (.tired, .ru): return male ? "Устал" : "Устала"
+        case (.tired, .zhHant): return "好累"
+        case (.tired, .en): return "Tired"
+        case (.stressed, .ru): return "Нервничаю"
+        case (.stressed, .zhHant): return "有點壓力"
+        case (.stressed, .en): return "Stressed"
+        case (.sad, .ru): return "Грустно"
+        case (.sad, .zhHant): return "有點難過"
+        case (.sad, .en): return "A bit sad"
+        case (.sick, .ru): return male ? "Приболел" : "Приболела"
+        case (.sick, .zhHant): return "不舒服"
+        case (.sick, .en): return "Not feeling well"
+        }
+    }
+}
+
+/// rooms/{roomId}/carePings/{pingId}
+struct CarePing: Codable, Identifiable, Hashable {
+    enum Kind: String, Codable, CaseIterable { case sakura, hearts, hugSparkle = "hug_sparkle" }
+
+    var id: String = UUID().uuidString
+    var type: Kind
+    var senderId: Partner
+    var createdAt: Date = Date()
+    var seen: Bool = false
+
+    var emoji: String {
+        switch type {
+        case .sakura: return "🌸"
+        case .hearts: return "💗"
+        case .hugSparkle: return "🤗"
+        }
+    }
+}
+
+/// rooms/{roomId}/presence/hug
+struct HugPresence: Codable, Hashable {
+    var partnerAHolding = false
+    var partnerBHolding = false
+    var partnerAHoldingAt: Date?
+    var partnerBHoldingAt: Date?
+    var lastTriggeredBy: Partner?
+    var updatedAt: Date?
+
+    /// Удержание считается живым, если обновлялось за последние 15 секунд (на случай обрыва связи).
+    func isHolding(_ partner: Partner, now: Date = Date()) -> Bool {
+        let holding = partner == .a ? partnerAHolding : partnerBHolding
+        let at = partner == .a ? partnerAHoldingAt : partnerBHoldingAt
+        guard holding, let at else { return false }
+        return now.timeIntervalSince(at) < 15
+    }
 }
 
 // MARK: - Calendar

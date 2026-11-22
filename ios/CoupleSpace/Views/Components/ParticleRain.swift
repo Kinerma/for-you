@@ -3,7 +3,7 @@ import SwiftUI
 /// Короткий дождь частиц на TimelineView + Canvas: конфетти для Match,
 /// лепестки и сердечки пригодятся для «Отправить поддержку» (модуль 3).
 struct ParticleRain: View {
-    enum Kind { case confetti, petals, hearts }
+    enum Kind { case confetti, petals, hearts, sparkles }
 
     var kind: Kind = .confetti
     var count = 70
@@ -27,6 +27,7 @@ struct ParticleRain: View {
         case .confetti: return [Palette.rose, Palette.lavenderDeep, Palette.walk, Palette.food, Color(hex: 0xF6C453)]
         case .petals: return [Palette.sakura, Color(hex: 0xF4B6C8), Color.white]
         case .hearts: return [Palette.rose, Color(hex: 0xF4B6C8), Palette.lavenderDeep]
+        case .sparkles: return [Color(hex: 0xF6C453), Palette.rose, Palette.lavenderDeep, Color.white]
         }
     }
 
@@ -55,6 +56,8 @@ struct ParticleRain: View {
                                    with: .color(color))
                     case .hearts:
                         layer.draw(Text("♥").font(.system(size: p.size)).foregroundStyle(color), at: .zero)
+                    case .sparkles:
+                        layer.draw(Text("✦").font(.system(size: p.size)).foregroundStyle(color), at: .zero)
                     }
                 }
             }

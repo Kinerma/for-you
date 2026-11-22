@@ -11,6 +11,8 @@ final class RoomStore {
     private(set) var ideas: [Idea] = []
     private(set) var coupons: [Coupon] = []
     private(set) var swipeSessions: [SwipeSession] = []
+    private(set) var hug = HugPresence()
+    private(set) var carePings: [CarePing] = []
 
     private(set) var connectedRoomId: String?
     @ObservationIgnored private let backend: RoomBackend
@@ -26,7 +28,7 @@ final class RoomStore {
     func connect(roomId: String) {
         guard connectedRoomId != roomId else { return }
         connectedRoomId = roomId
-        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []
+        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []; hug = HugPresence(); carePings = []
         backend.connect(roomId: roomId) { [weak self] update in
             DispatchQueue.main.async { self?.apply(update) }
         }
@@ -36,6 +38,7 @@ final class RoomStore {
         backend.disconnect()
         connectedRoomId = nil
         meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []
+        hug = HugPresence(); carePings = []
     }
 
     private func apply(_ update: RoomUpdate) {
@@ -49,6 +52,8 @@ final class RoomStore {
         case .swipeSessions(let value):
             swipeSessions = value
             detectSwipeMatch()
+        case .hug(let value): hug = value
+        case .carePings(let value): carePings = value
         }
     }
 
@@ -62,9 +67,28 @@ final class RoomStore {
 
     func setPinHash(_ hash: String) { backend.setPinHash(hash) }
 
-    func setMood(emoji: String, text: String, for partner: Partner) {
-        backend.setMood(Mood(emoji: emoji, text: text, updatedAt: Date()), for: partner)
+    func setMood(emoji: String, text: String, status: MoodStatus? = nil, for partner: Partner) {
+        backend.setMood(Mood(emoji: emoji, text: text, updatedAt: Date(), status: status?.rawValue), for: partner)
     }
+
+    // MARK: Hug & care (ТЗ v2, 1.2–1.3)
+
+    func setHugHolding(_ holding: Bool, as partner: Partner, isNewHug: Bool = false) {
+        backend.setHugHolding(holding, for: partner, isNewHug: isNewHug)
+    }
+
+    func sendCare(_ kind: CarePing.Kind, from partner: Partner) {
+        backend.sendCarePing(CarePing(type: kind, senderId: partner))
+    }
+
+    /// Непросмотренная поддержка, которую прислали мне.
+    func pendingCare(for me: Partner) -> CarePing? {
+        carePings
+            .filter { !$0.seen && $0.senderId != me }
+            .min { $0.createdAt < $1.createdAt }
+    }
+
+    func markSeen(_ ping: CarePing) { backend.markCarePingSeen(id: ping.id) }
 
     func answer(_ value: String, to question: QuizQuestion, as partner: Partner) {
         backend.setAnswer(value, question: question, for: partner)

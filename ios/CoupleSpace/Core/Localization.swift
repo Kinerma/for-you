@@ -138,6 +138,9 @@ enum L: String {
     case pickTogether, wheel, swipeTitle, swipeYes, swipeLater, swipeNeedIdeas, swipeWaiting, swipeNewRound
     case match, matchSubtitle, addToday, chooseDate, addedToCalendar
     case wheelTitle, wheelSpin, wheelOptionPlaceholder, wheelNeedOptions, wheelResult, wheelFromJar, wheelOptions
+    // v2: Hug & care
+    case hugTitle, hugHint, hugSending, hugPartnerHolding, hugTogether
+    case moodStatus, sendSupport, careSakura, careHearts, careHug, careReceived
 
     struct Entry { let ru: String; let zh: String; let en: String }
 
@@ -295,6 +298,17 @@ enum L: String {
         .wheelResult: .init(ru: "Выпало:", zh: "結果：", en: "It's:"),
         .wheelFromJar: .init(ru: "Из копилки", zh: "從收集箱", en: "From the jar"),
         .wheelOptions: .init(ru: "Варианты", zh: "選項", en: "Options"),
+        .hugTitle: .init(ru: "Обнять на расстоянии", zh: "隔空擁抱", en: "Long-distance hug"),
+        .hugHint: .init(ru: "Удерживай кружок, чтобы обнять", zh: "按住圓圈就可以擁抱對方", en: "Hold the circle to send a hug"),
+        .hugSending: .init(ru: "Обнимаю… если вы будете держать вместе, телефоны почувствуют сердцебиение", zh: "擁抱中…兩個人一起按住，手機會一起心跳", en: "Hugging… hold together to feel a shared heartbeat"),
+        .hugPartnerHolding: .init(ru: "обнимает тебя прямо сейчас — удерживай кружок в ответ", zh: "正在抱住你，按住圓圈回抱吧", en: "is hugging you right now — hold the circle to hug back"),
+        .hugTogether: .init(ru: "Вы обнимаетесь 🤍", zh: "你們正在擁抱 🤍", en: "You're hugging 🤍"),
+        .moodStatus: .init(ru: "Статус", zh: "狀態", en: "Status"),
+        .sendSupport: .init(ru: "Отправить поддержку", zh: "送上關心", en: "Send some support"),
+        .careSakura: .init(ru: "Сакура", zh: "櫻花", en: "Sakura"),
+        .careHearts: .init(ru: "Сердечки", zh: "心心", en: "Hearts"),
+        .careHug: .init(ru: "Обнимашки", zh: "抱抱", en: "Hugs"),
+        .careReceived: .init(ru: "шлёт тебе поддержку", zh: "送你一點關心", en: "is sending you some love"),
         .pinsDontMatch: .init(ru: "Коды не совпадают", zh: "兩次輸入的 PIN 碼不一樣", en: "The PINs don't match"),
     ]
 }
