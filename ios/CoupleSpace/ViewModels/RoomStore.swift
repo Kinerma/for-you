@@ -13,6 +13,7 @@ final class RoomStore {
     private(set) var swipeSessions: [SwipeSession] = []
     private(set) var hug = HugPresence()
     private(set) var carePings: [CarePing] = []
+    private(set) var guesses: [String: GuessEntry] = [:]
 
     private(set) var connectedRoomId: String?
     @ObservationIgnored private let backend: RoomBackend
@@ -28,7 +29,7 @@ final class RoomStore {
     func connect(roomId: String) {
         guard connectedRoomId != roomId else { return }
         connectedRoomId = roomId
-        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []; hug = HugPresence(); carePings = []
+        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []; hug = HugPresence(); carePings = []; guesses = [:]
         backend.connect(roomId: roomId) { [weak self] update in
             DispatchQueue.main.async { self?.apply(update) }
         }
@@ -38,7 +39,7 @@ final class RoomStore {
         backend.disconnect()
         connectedRoomId = nil
         meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []
-        hug = HugPresence(); carePings = []
+        hug = HugPresence(); carePings = []; guesses = [:]
     }
 
     private func apply(_ update: RoomUpdate) {
@@ -54,6 +55,9 @@ final class RoomStore {
             detectSwipeMatch()
         case .hug(let value): hug = value
         case .carePings(let value): carePings = value
+        case .guesses(let value):
+            guesses = Dictionary(uniqueKeysWithValues: value.map { ($0.id, $0) })
+            completeFinishedGuesses()
         }
     }
 
@@ -173,6 +177,50 @@ final class RoomStore {
     private static func couponOrder(_ a: Coupon, _ b: Coupon) -> Bool {
         if a.isRedeemed != b.isRedeemed { return !a.isRedeemed }
         return a.createdAt > b.createdAt
+    }
+
+    // MARK: Guess Mode (ТЗ v2, 3.1)
+
+    static let guessRoundSize = 5
+
+    /// Ключ раунда недели, например «2026-W47».
+    static func weekRoundKey(for date: Date = Date()) -> String {
+        let cal = Calendar(identifier: .iso8601)
+        let c = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+        return String(format: "%04d-W%02d", c.yearForWeekOfYear ?? 0, c.weekOfYear ?? 0)
+    }
+
+    /// 5 вопросов «или/или» на неделю, по кругу из общего банка.
+    static func roundQuestions(for date: Date = Date()) -> [QuizQuestion] {
+        let pool = QuestionBank.shared.questions.filter { $0.type == .eitherOr }.sorted { $0.id < $1.id }
+        guard !pool.isEmpty else { return [] }
+        let cal = Calendar(identifier: .iso8601)
+        let c = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+        let index = (c.yearForWeekOfYear ?? 0) * 53 + (c.weekOfYear ?? 0)
+        let start = (index * guessRoundSize) % pool.count
+        return (0..<min(guessRoundSize, pool.count)).map { pool[(start + $0) % pool.count] }
+    }
+
+    func guessEntry(roundKey: String, question: QuizQuestion) -> GuessEntry {
+        let id = GuessEntry.makeId(roundKey: roundKey, questionId: question.id)
+        return guesses[id] ?? GuessEntry(id: id, roundKey: roundKey, questionId: question.id)
+    }
+
+    func submitGuess(roundKey: String, question: QuizQuestion, selfAnswer: String, guess: String, as partner: Partner) {
+        backend.submitGuess(guessEntry(roundKey: roundKey, question: question),
+                            selfAnswer: selfAnswer, guess: guess, for: partner)
+    }
+
+    /// Общие звёздочки за все раунды.
+    var totalStars: Int {
+        guesses.values.reduce(0) { $0 + ($1.starsEarned ?? ($1.isComplete ? $1.computedStars : 0)) }
+    }
+
+    /// Когда оба ответили на вопрос, фиксируем звёздочки (одинаково на обоих iPhone).
+    private func completeFinishedGuesses() {
+        for entry in guesses.values where entry.isComplete && entry.completedAt == nil {
+            backend.completeGuess(id: entry.id, stars: entry.computedStars)
+        }
     }
 
     // MARK: Swipe Match

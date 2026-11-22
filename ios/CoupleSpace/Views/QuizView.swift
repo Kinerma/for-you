@@ -15,12 +15,14 @@ struct QuizView: View {
                 Picker("", selection: $vm.mode) {
                     Text(loc.t(.quizQuestions)).tag(QuizMode.questions)
                     Text(loc.t(.quizOurAnswers)).tag(QuizMode.answers)
+                    Text(loc.t(.guessTab)).tag(QuizMode.guess)
                 }
                 .pickerStyle(.segmented)
 
                 switch vm.mode {
                 case .questions: questionsMode
                 case .answers: AnswersArchiveView()
+                case .guess: GuessModeView()
                 }
             }
             .padding(.horizontal, 20)

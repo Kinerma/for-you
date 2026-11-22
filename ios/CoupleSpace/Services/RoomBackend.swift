@@ -10,6 +10,7 @@ enum RoomUpdate {
     case swipeSessions([SwipeSession])
     case hug(HugPresence)
     case carePings([CarePing])
+    case guesses([GuessEntry])
 }
 
 /// Отписка от слушателя (например, комментариев одной карточки).
@@ -57,4 +58,8 @@ protocol RoomBackend: AnyObject {
     func setHugHolding(_ holding: Bool, for partner: Partner, isNewHug: Bool)
     func sendCarePing(_ ping: CarePing)
     func markCarePingSeen(id: String)
+
+    // Угадайка
+    func submitGuess(_ entry: GuessEntry, selfAnswer: String, guess: String, for partner: Partner)
+    func completeGuess(id: String, stars: Int)
 }

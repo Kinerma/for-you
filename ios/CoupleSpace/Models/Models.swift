@@ -131,6 +131,82 @@ struct SwipeSession: Codable, Identifiable, Hashable {
     }
 }
 
+// MARK: - Guess Mode (ТЗ v2, 3.1)
+
+/// rooms/{roomId}/guessRounds/{roundKey}_{questionId}
+/// Раунд недели = 5 вопросов «или/или»; на каждый — ответ за себя и догадка об ответе партнёра.
+struct GuessEntry: Codable, Identifiable, Hashable {
+    var id: String
+    var roundKey: String
+    var questionId: String
+    var selfAnswerA: String?
+    var guessPartnerA: String?
+    var selfAnswerB: String?
+    var guessPartnerB: String?
+    var starsEarned: Int?
+    var completedAt: Date?
+
+    static func makeId(roundKey: String, questionId: String) -> String { "\(roundKey)_\(questionId)" }
+
+    func selfAnswer(_ p: Partner) -> String? { p == .a ? selfAnswerA : selfAnswerB }
+    func guess(_ p: Partner) -> String? { p == .a ? guessPartnerA : guessPartnerB }
+    func isDone(by p: Partner) -> Bool { selfAnswer(p) != nil && guess(p) != nil }
+    var isComplete: Bool { isDone(by: .a) && isDone(by: .b) }
+
+    /// Угадал ли `p` ответ партнёра.
+    func guessedRight(_ p: Partner) -> Bool {
+        guard let g = guess(p), let real = selfAnswer(p.other) else { return false }
+        return g == real
+    }
+
+    /// По звёздочке за каждую верную догадку (максимум 2 за вопрос).
+    var computedStars: Int { (guessedRight(.a) ? 1 : 0) + (guessedRight(.b) ? 1 : 0) }
+}
+
+/// Награды за общие звёздочки — альтернативные иконки приложения.
+enum AppIconReward: String, CaseIterable, Identifiable {
+    case classic, sakura, lavender, night
+
+    var id: String { rawValue }
+
+    /// Имя набора в Assets (nil — основная иконка).
+    var iconName: String? {
+        switch self {
+        case .classic: return nil
+        case .sakura: return "AppIcon-Sakura"
+        case .lavender: return "AppIcon-Lavender"
+        case .night: return "AppIcon-Night"
+        }
+    }
+
+    var previewImage: String {
+        switch self {
+        case .classic: return "IconPreview-Classic"
+        case .sakura: return "IconPreview-Sakura"
+        case .lavender: return "IconPreview-Lavender"
+        case .night: return "IconPreview-Night"
+        }
+    }
+
+    var starsRequired: Int {
+        switch self {
+        case .classic: return 0
+        case .sakura: return 10
+        case .lavender: return 25
+        case .night: return 50
+        }
+    }
+
+    var titleKey: L {
+        switch self {
+        case .classic: return .iconClassic
+        case .sakura: return .iconSakura
+        case .lavender: return .iconLavender
+        case .night: return .iconNight
+        }
+    }
+}
+
 // MARK: - Coupons (ТЗ v2, 2.3)
 
 /// rooms/{roomId}/coupons/{couponId}

@@ -187,6 +187,25 @@ final class FirestoreBackend: RoomBackend {
                 }
                 onUpdate(.carePings(pings))
             })
+
+        listeners.append(ref.collection("guessRounds").addSnapshotListener { snapshot, _ in
+            let entries: [GuessEntry] = (snapshot?.documents ?? []).compactMap { doc in
+                let d = doc.data(with: .estimate)
+                guard let questionId = d["questionId"] as? String else { return nil }
+                return GuessEntry(
+                    id: doc.documentID,
+                    roundKey: d["roundKey"] as? String ?? "",
+                    questionId: questionId,
+                    selfAnswerA: d["selfAnswerA"] as? String,
+                    guessPartnerA: d["guessPartnerA"] as? String,
+                    selfAnswerB: d["selfAnswerB"] as? String,
+                    guessPartnerB: d["guessPartnerB"] as? String,
+                    starsEarned: d["starsEarned"] as? Int,
+                    completedAt: (d["completedAt"] as? Timestamp)?.dateValue()
+                )
+            }
+            onUpdate(.guesses(entries))
+        })
     }
 
     // MARK: Writes
@@ -382,6 +401,26 @@ final class FirestoreBackend: RoomBackend {
                 "senderId": ping.senderId.rawValue,
                 "createdAt": FieldValue.serverTimestamp(),
                 "seen": false,
+            ])
+        }
+    }
+
+    func submitGuess(_ entry: GuessEntry, selfAnswer: String, guess: String, for partner: Partner) {
+        write {
+            $0.collection("guessRounds").document(entry.id).setData([
+                "roundKey": entry.roundKey,
+                "questionId": entry.questionId,
+                "selfAnswer\(partner.rawValue)": selfAnswer,
+                "guessPartner\(partner.rawValue)": guess,
+            ], merge: true)
+        }
+    }
+
+    func completeGuess(id: String, stars: Int) {
+        write {
+            $0.collection("guessRounds").document(id).updateData([
+                "starsEarned": stars,
+                "completedAt": FieldValue.serverTimestamp(),
             ])
         }
     }

@@ -2,7 +2,7 @@ import SwiftUI
 import Observation
 
 enum QuizMode: Hashable {
-    case questions, answers
+    case questions, answers, guess
 }
 
 @Observable

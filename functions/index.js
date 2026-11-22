@@ -53,6 +53,11 @@ const TEXT = {
     zh_Hant: (n, t) => [`${n} 送你一點關心 ${t}`, "打開 App 看看 🤍"],
     en: (n, t) => [`${n} is sending you love ${t}`, "Open the app 🤍"],
   },
+  guessTurn: {
+    ru: (n, t) => [`${n} прошёл(ла) раунд «Насколько хорошо ты меня знаешь?»`, "Твоя очередь — угадай ответы ✨"],
+    zh_Hant: (n, t) => [`${n} 完成了「你有多了解我？」`, "到你了，猜猜對方的答案 ✨"],
+    en: (n, t) => [`${n} finished "How well do you know me?"`, "Your turn — guess their answers ✨"],
+  },
   idea: {
     ru: (n, t) => [`Новая идея от ${n}`, t],
     zh_Hant: (n, t) => [`${n} 放了一個新點子`, t],
@@ -159,4 +164,23 @@ exports.onCarePing = onDocumentCreated("rooms/{roomId}/carePings/{pingId}", asyn
   const data = event.data && event.data.data();
   if (!data || !data.senderId) return;
   await notify(event.params.roomId, data.senderId, "care", CARE_EMOJI[data.type] || "🤍");
+});
+
+// v2: угадайка — когда партнёр ответил на все 5 вопросов раунда, сообщить второму.
+const GUESS_ROUND_SIZE = 5;
+exports.onGuessAnswer = onDocumentWritten("rooms/{roomId}/guessRounds/{entryId}", async (event) => {
+  const before = event.data.before.exists ? event.data.before.data() : {};
+  const after = event.data.after.exists ? event.data.after.data() : null;
+  if (!after || !after.roundKey) return;
+  for (const p of ["A", "B"]) {
+    const key = `guessPartner${p}`;
+    if (!after[key] || before[key]) continue;
+    const round = await db.collection(`rooms/${event.params.roomId}/guessRounds`)
+      .where("roundKey", "==", after.roundKey).get();
+    const done = round.docs.filter((d) => d.get(`selfAnswer${p}`) && d.get(key)).length;
+    const otherDone = round.docs.filter((d) => d.get(`guessPartner${p === "A" ? "B" : "A"}`)).length;
+    if (done === GUESS_ROUND_SIZE && otherDone < GUESS_ROUND_SIZE) {
+      await notify(event.params.roomId, p, "guessTurn");
+    }
+  }
 });

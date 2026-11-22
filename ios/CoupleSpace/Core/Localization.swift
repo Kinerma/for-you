@@ -141,6 +141,10 @@ enum L: String {
     // v2: Hug & care
     case hugTitle, hugHint, hugSending, hugPartnerHolding, hugTogether
     case moodStatus, sendSupport, careSakura, careHearts, careHug, careReceived
+    // v2: Guess mode & rewards
+    case guessTab, guessTitle, guessRoundOfWeek, guessStepSelf, guessStepPartner, guessWaiting
+    case guessResults, guessRoundStars, guessStarsTotal, guessRight, guessWrong, guessNextRound
+    case rewards, rewardsHint, starsToUnlock, iconClassic, iconSakura, iconLavender, iconNight, iconInUse, useIcon
 
     struct Entry { let ru: String; let zh: String; let en: String }
 
@@ -309,6 +313,27 @@ enum L: String {
         .careHearts: .init(ru: "Сердечки", zh: "心心", en: "Hearts"),
         .careHug: .init(ru: "Обнимашки", zh: "抱抱", en: "Hugs"),
         .careReceived: .init(ru: "шлёт тебе поддержку", zh: "送你一點關心", en: "is sending you some love"),
+        .guessTab: .init(ru: "Угадай", zh: "猜一猜", en: "Guess"),
+        .guessTitle: .init(ru: "Насколько хорошо ты меня знаешь?", zh: "你有多了解我？", en: "How well do you know me?"),
+        .guessRoundOfWeek: .init(ru: "Раунд недели", zh: "本週回合", en: "This week's round"),
+        .guessStepSelf: .init(ru: "Сначала ответь за себя", zh: "先回答你自己的答案", en: "First, answer for yourself"),
+        .guessStepPartner: .init(ru: "А что ответит {name}?", zh: "{name} 會怎樣答？", en: "What will {name} say?"),
+        .guessWaiting: .init(ru: "Твои ответы сохранены. Ждём, когда {name} пройдёт раунд…", zh: "你已經完成了，等 {name} 完成這個回合…", en: "You're done. Waiting for {name} to finish the round…"),
+        .guessResults: .init(ru: "Результаты", zh: "結果", en: "Results"),
+        .guessRoundStars: .init(ru: "За раунд", zh: "本回合", en: "This round"),
+        .guessStarsTotal: .init(ru: "наших звёздочек", zh: "我們的星星", en: "stars together"),
+        .guessRight: .init(ru: "угадал(а)", zh: "猜中", en: "guessed"),
+        .guessWrong: .init(ru: "мимо", zh: "猜錯", en: "missed"),
+        .guessNextRound: .init(ru: "Новый раунд откроется в понедельник", zh: "新回合星期一開始", en: "A new round opens on Monday"),
+        .rewards: .init(ru: "Награды", zh: "獎勵", en: "Rewards"),
+        .rewardsHint: .init(ru: "Копите звёздочки вместе и открывайте новые иконки приложения", zh: "一起儲星星，解鎖新的 App 圖示", en: "Collect stars together to unlock new app icons"),
+        .starsToUnlock: .init(ru: "Ещё {n} ★ до награды", zh: "還差 {n} ★", en: "{n} ★ to the next reward"),
+        .iconClassic: .init(ru: "Классическая", zh: "經典", en: "Classic"),
+        .iconSakura: .init(ru: "Сакура", zh: "櫻花", en: "Sakura"),
+        .iconLavender: .init(ru: "Лаванда", zh: "薰衣草", en: "Lavender"),
+        .iconNight: .init(ru: "Ночная", zh: "夜空", en: "Night"),
+        .iconInUse: .init(ru: "Сейчас стоит", zh: "使用中", en: "In use"),
+        .useIcon: .init(ru: "Поставить", zh: "使用", en: "Use"),
         .pinsDontMatch: .init(ru: "Коды не совпадают", zh: "兩次輸入的 PIN 碼不一樣", en: "The PINs don't match"),
     ]
 }

@@ -15,6 +15,7 @@ final class LocalBackend: RoomBackend {
         var swipeSessions: [String: SwipeSession] = [:]
         var hug = HugPresence()
         var carePings: [String: CarePing] = [:]
+        var guesses: [String: GuessEntry] = [:]
     }
 
     private var state = State()
@@ -142,6 +143,22 @@ final class LocalBackend: RoomBackend {
 
     func sendCarePing(_ ping: CarePing) { state.carePings[ping.id] = ping; commit() }
 
+    func submitGuess(_ entry: GuessEntry, selfAnswer: String, guess: String, for partner: Partner) {
+        var updated = state.guesses[entry.id] ?? entry
+        switch partner {
+        case .a: updated.selfAnswerA = selfAnswer; updated.guessPartnerA = guess
+        case .b: updated.selfAnswerB = selfAnswer; updated.guessPartnerB = guess
+        }
+        state.guesses[entry.id] = updated
+        commit()
+    }
+
+    func completeGuess(id: String, stars: Int) {
+        state.guesses[id]?.starsEarned = stars
+        state.guesses[id]?.completedAt = Date()
+        commit()
+    }
+
     func markCarePingSeen(id: String) {
         state.carePings[id]?.seen = true
         commit()
@@ -177,6 +194,7 @@ final class LocalBackend: RoomBackend {
         onUpdate(.swipeSessions(Array(state.swipeSessions.values)))
         onUpdate(.hug(state.hug))
         onUpdate(.carePings(Array(state.carePings.values)))
+        onUpdate(.guesses(Array(state.guesses.values)))
     }
 
     private func fileURL(_ roomId: String) -> URL {
