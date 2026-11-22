@@ -131,10 +131,14 @@ struct OnboardingView: View {
 
     private func submit() {
         guard canContinue else { return }
-        if !joining { PinStore.save(pin) }
         let roomId = joining ? normalizedCode : AppSession.generateRoomCode()
         store.connect(roomId: roomId)
-        if !joining { store.createRoom() }
+        if !joining {
+            store.createRoom()
+            let pinHash = PinStore.hash(pin, roomId: roomId)
+            PinStore.saveHash(pinHash)
+            store.setPinHash(pinHash)
+        }
         store.setProfile(name: trimmedName, language: loc.language, for: role)
         session.completeOnboarding(role: role, name: trimmedName, roomId: roomId)
     }

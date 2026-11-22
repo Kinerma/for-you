@@ -54,6 +54,8 @@ final class RoomStore {
         backend.setProfile(name: name, language: language, for: partner)
     }
 
+    func setPinHash(_ hash: String) { backend.setPinHash(hash) }
+
     func setMood(emoji: String, text: String, for partner: Partner) {
         backend.setMood(Mood(emoji: emoji, text: text, updatedAt: Date()), for: partner)
     }

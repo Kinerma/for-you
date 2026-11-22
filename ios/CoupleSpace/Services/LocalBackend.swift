@@ -41,6 +41,11 @@ final class LocalBackend: RoomBackend {
         commit()
     }
 
+    func setPinHash(_ hash: String) {
+        state.meta.pinHash = hash
+        commit()
+    }
+
     func setMood(_ mood: Mood, for partner: Partner) {
         state.moods[partner.rawValue] = mood
         commit()

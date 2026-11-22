@@ -57,6 +57,7 @@ final class AppSession {
     func leaveRoom() {
         roomId = ""
         role = nil
+        PinStore.clear()
         selectedTab = .home
     }
 
@@ -69,7 +70,7 @@ final class AppSession {
 
     @discardableResult
     func unlock(pin: String) -> Bool {
-        guard pin == PinStore.current else { return false }
+        guard PinStore.verify(pin, roomId: roomId) else { return false }
         isLocked = false
         return true
     }

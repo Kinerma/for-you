@@ -38,6 +38,11 @@ struct RootView: View {
         }
         .onChange(of: store.nextEvent) { _, _ in store.updateWidgetSnapshot(me: session.me) }
         .onChange(of: store.moods) { _, _ in store.updateWidgetSnapshot(me: session.me) }
+        .onChange(of: store.meta.pinHash) { _, newHash in
+            // PIN общий: при входе по коду и при смене PIN партнёром подтягиваем его хеш.
+            guard let newHash, !newHash.isEmpty, newHash != PinStore.currentHash else { return }
+            PinStore.saveHash(newHash)
+        }
         .onChange(of: loc.language) { _, newValue in
             // Язык нужен Cloud Function, чтобы прислать пуш на правильном языке.
             guard session.isOnboarded else { return }

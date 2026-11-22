@@ -18,6 +18,7 @@ protocol RoomBackend: AnyObject {
 
     func createRoom()
     func setProfile(name: String, language: AppLanguage, for partner: Partner)
+    func setPinHash(_ hash: String)
     func setMood(_ mood: Mood, for partner: Partner)
     func setAnswer(_ value: String, question: QuizQuestion, for partner: Partner)
     func saveEvent(_ event: PlanEvent)

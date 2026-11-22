@@ -108,6 +108,8 @@ struct SettingsSheet: View {
 
 struct ChangePinView: View {
     @Environment(LocalizationManager.self) private var loc
+    @Environment(AppSession.self) private var session
+    @Environment(RoomStore.self) private var store
     @Environment(\.dismiss) private var dismiss
 
     @State private var current = ""
@@ -151,9 +153,11 @@ struct ChangePinView: View {
     }
 
     private func save() {
-        guard !hasPin || current == PinStore.current else { error = .pinWrong; return }
+        guard !hasPin || PinStore.verify(current, roomId: session.roomId) else { error = .pinWrong; return }
         guard newPin == repeatPin else { error = .pinMismatch; return }
-        PinStore.save(newPin)
+        let newHash = PinStore.hash(newPin, roomId: session.roomId)
+        PinStore.saveHash(newHash)
+        store.setPinHash(newHash)
         error = nil
         success += 1
         dismiss()

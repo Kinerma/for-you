@@ -163,6 +163,7 @@ struct RoomMeta: Codable, Hashable {
     var partnerBName: String?
     var langA: String?
     var langB: String?
+    var pinHash: String?
 
     func name(for partner: Partner) -> String? {
         let value = partner == .a ? partnerAName : partnerBName

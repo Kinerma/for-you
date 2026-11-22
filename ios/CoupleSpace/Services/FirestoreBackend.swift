@@ -50,7 +50,8 @@ final class FirestoreBackend: RoomBackend {
                 partnerAName: meta["partnerAName"] as? String,
                 partnerBName: meta["partnerBName"] as? String,
                 langA: meta["langA"] as? String,
-                langB: meta["langB"] as? String
+                langB: meta["langB"] as? String,
+                pinHash: meta["pinHash"] as? String
             )))
         })
 
@@ -137,6 +138,10 @@ final class FirestoreBackend: RoomBackend {
                 "lang\(partner.rawValue)": language.rawValue,
             ]], merge: true)
         }
+    }
+
+    func setPinHash(_ hash: String) {
+        write { $0.setData(["meta": ["pinHash": hash]], merge: true) }
     }
 
     func setMood(_ mood: Mood, for partner: Partner) {
