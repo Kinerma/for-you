@@ -142,6 +142,21 @@ final class FirestoreBackend: RoomBackend {
             }
             onUpdate(.coupons(coupons))
         })
+
+        listeners.append(ref.collection("swipeSessions").addSnapshotListener { snapshot, _ in
+            let sessions: [SwipeSession] = (snapshot?.documents ?? []).map { doc in
+                let d = doc.data(with: .estimate)
+                return SwipeSession(
+                    id: doc.documentID,
+                    status: SwipeSession.Status(rawValue: d["status"] as? String ?? "") ?? .active,
+                    votesA: d["votesA"] as? [String: Bool] ?? [:],
+                    votesB: d["votesB"] as? [String: Bool] ?? [:],
+                    matchedIdeaId: d["matchedIdeaId"] as? String,
+                    createdAt: (d["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+                )
+            }
+            onUpdate(.swipeSessions(sessions))
+        })
     }
 
     // MARK: Writes
@@ -294,5 +309,35 @@ final class FirestoreBackend: RoomBackend {
 
     func deleteCoupon(id: String) {
         write { $0.collection("coupons").document(id).delete() }
+    }
+
+    // MARK: Swipe sessions
+
+    func createSwipeSession(_ session: SwipeSession) {
+        write {
+            $0.collection("swipeSessions").document(session.id).setData([
+                "status": session.status.rawValue,
+                "votesA": [String: Bool](),
+                "votesB": [String: Bool](),
+                "createdAt": FieldValue.serverTimestamp(),
+            ])
+        }
+    }
+
+    func voteSwipe(sessionId: String, ideaId: String, like: Bool, for partner: Partner) {
+        write {
+            $0.collection("swipeSessions").document(sessionId).updateData([
+                FieldPath(["votes\(partner.rawValue)", ideaId]): like,
+            ])
+        }
+    }
+
+    func setSwipeMatch(sessionId: String, ideaId: String) {
+        write {
+            $0.collection("swipeSessions").document(sessionId).updateData([
+                "status": SwipeSession.Status.matched.rawValue,
+                "matchedIdeaId": ideaId,
+            ])
+        }
     }
 }

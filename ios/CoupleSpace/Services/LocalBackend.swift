@@ -12,6 +12,7 @@ final class LocalBackend: RoomBackend {
         var ideas: [String: Idea] = [:]
         var coupons: [String: Coupon] = [:]
         var comments: [String: [QuizComment]] = [:]
+        var swipeSessions: [String: SwipeSession] = [:]
     }
 
     private var state = State()
@@ -112,6 +113,29 @@ final class LocalBackend: RoomBackend {
     func saveCoupon(_ coupon: Coupon) { state.coupons[coupon.id] = coupon; commit() }
     func deleteCoupon(id: String) { state.coupons[id] = nil; commit() }
 
+    func createSwipeSession(_ session: SwipeSession) {
+        state.swipeSessions[session.id] = session
+        commit()
+    }
+
+    func voteSwipe(sessionId: String, ideaId: String, like: Bool, for partner: Partner) {
+        guard var session = state.swipeSessions[sessionId] else { return }
+        switch partner {
+        case .a: session.votesA[ideaId] = like
+        case .b: session.votesB[ideaId] = like
+        }
+        state.swipeSessions[sessionId] = session
+        commit()
+    }
+
+    func setSwipeMatch(sessionId: String, ideaId: String) {
+        guard var session = state.swipeSessions[sessionId] else { return }
+        session.status = .matched
+        session.matchedIdeaId = ideaId
+        state.swipeSessions[sessionId] = session
+        commit()
+    }
+
     // MARK: Private
 
     private func commit() {
@@ -131,6 +155,7 @@ final class LocalBackend: RoomBackend {
         onUpdate(.events(Array(state.events.values)))
         onUpdate(.ideas(Array(state.ideas.values)))
         onUpdate(.coupons(Array(state.coupons.values)))
+        onUpdate(.swipeSessions(Array(state.swipeSessions.values)))
     }
 
     private func fileURL(_ roomId: String) -> URL {

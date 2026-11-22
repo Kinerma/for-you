@@ -9,6 +9,8 @@ struct CalendarView: View {
     @State private var planEditor: PlanEditorTarget?
     @State private var addingIdea = false
     @State private var scheduledTrigger = 0
+    @State private var showingSwipe = false
+    @State private var showingWheel = false
 
     var body: some View {
         ScrollView {
@@ -27,6 +29,12 @@ struct CalendarView: View {
         }
         .sheet(isPresented: $addingIdea) {
             IdeaEditorSheet()
+        }
+        .fullScreenCover(isPresented: $showingSwipe) {
+            SwipeMatchView()
+        }
+        .sheet(isPresented: $showingWheel) {
+            WheelOfFortuneView()
         }
         .sensoryFeedback(.success, trigger: scheduledTrigger)
     }
@@ -180,6 +188,19 @@ struct CalendarView: View {
                 Spacer()
                 Button(loc.t(.addIdea)) { addingIdea = true }
                     .buttonStyle(SoftButtonStyle())
+            }
+
+            HStack(spacing: 8) {
+                Button { showingSwipe = true } label: {
+                    Label(loc.t(.pickTogether), systemImage: "heart.square.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(GradientButtonStyle(compact: true))
+                Button { showingWheel = true } label: {
+                    Label(loc.t(.wheel), systemImage: "circle.dotted.circle")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(SoftButtonStyle())
             }
 
             if ideas.isEmpty {

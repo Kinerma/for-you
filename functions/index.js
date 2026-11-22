@@ -38,6 +38,11 @@ const TEXT = {
     zh_Hant: (n, t) => [`${n} 留了言`, t],
     en: (n, t) => [`A note from ${n}`, t],
   },
+  match: {
+    ru: (n, t) => ["Match! 💞", `Вы оба хотите: ${t}`],
+    zh_Hant: (n, t) => ["配對成功！💞", `你們都想去：${t}`],
+    en: (n, t) => ["It's a match! 💞", `You both want: ${t}`],
+  },
   idea: {
     ru: (n, t) => [`Новая идея от ${n}`, t],
     zh_Hant: (n, t) => [`${n} 放了一個新點子`, t],
@@ -107,4 +112,16 @@ exports.onQuizComment = onDocumentCreated("rooms/{roomId}/quizAnswers/{questionI
   const data = event.data && event.data.data();
   if (!data || !data.senderId) return;
   await notify(event.params.roomId, data.senderId, "comment", data.text || "");
+});
+
+// v2: «Тиндер» для идей — сообщить обоим о совпадении.
+exports.onSwipeMatch = onDocumentWritten("rooms/{roomId}/swipeSessions/{sessionId}", async (event) => {
+  const before = event.data.before.exists ? event.data.before.data() : {};
+  const after = event.data.after.exists ? event.data.after.data() : null;
+  if (!after || after.status !== "matched" || before.status === "matched" || !after.matchedIdeaId) return;
+  const roomId = event.params.roomId;
+  const idea = await db.doc(`rooms/${roomId}/ideas/${after.matchedIdeaId}`).get();
+  const title = (idea.exists && idea.get("title")) || "";
+  // notify(from) шлёт второму партнёру, поэтому вызываем от имени каждого.
+  await Promise.all([notify(roomId, "A", "match", title), notify(roomId, "B", "match", title)]);
 });

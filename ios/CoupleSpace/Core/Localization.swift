@@ -134,6 +134,10 @@ enum L: String {
     case couponsEmptyForMe, couponsEmptyFromMe, couponUseConfirm, couponFrom, couponFor, couponGive
     // v2: Reactions & comments
     case commentPlaceholder
+    // v2: Swipe Match & Wheel
+    case pickTogether, wheel, swipeTitle, swipeYes, swipeLater, swipeNeedIdeas, swipeWaiting, swipeNewRound
+    case match, matchSubtitle, addToday, chooseDate, addedToCalendar
+    case wheelTitle, wheelSpin, wheelOptionPlaceholder, wheelNeedOptions, wheelResult, wheelFromJar, wheelOptions
 
     struct Entry { let ru: String; let zh: String; let en: String }
 
@@ -271,6 +275,26 @@ enum L: String {
         .couponFor: .init(ru: "Для:", zh: "送給：", en: "For:"),
         .couponGive: .init(ru: "Подарить", zh: "送出", en: "Give"),
         .commentPlaceholder: .init(ru: "Написать приписку…", zh: "寫句小留言…", en: "Add a little note…"),
+        .pickTogether: .init(ru: "Выбрать вместе", zh: "一起揀", en: "Pick together"),
+        .wheel: .init(ru: "Колесо", zh: "轉盤", en: "Wheel"),
+        .swipeTitle: .init(ru: "Куда пойдём?", zh: "我們去哪裡？", en: "Where shall we go?"),
+        .swipeYes: .init(ru: "Хочу сегодня", zh: "今天想去", en: "Want today"),
+        .swipeLater: .init(ru: "Не сейчас", zh: "下次吧", en: "Not now"),
+        .swipeNeedIdeas: .init(ru: "Добавь в копилку хотя бы две идеи, чтобы выбирать вместе", zh: "先在點子收集箱加至少兩個點子，才可以一起揀", en: "Add at least two ideas to the jar to pick together"),
+        .swipeWaiting: .init(ru: "Ты всё пролистал(а). Ждём, что выберет партнёр…", zh: "你已經揀完了，等對方揀…", en: "You're done. Waiting for your partner…"),
+        .swipeNewRound: .init(ru: "Новый раунд", zh: "新一輪", en: "New round"),
+        .match: .init(ru: "Match!", zh: "配對成功！", en: "It's a match!"),
+        .matchSubtitle: .init(ru: "Вы оба хотите:", zh: "你們都想去：", en: "You both want:"),
+        .addToday: .init(ru: "Добавить на сегодня", zh: "加到今天", en: "Add for today"),
+        .chooseDate: .init(ru: "Выбрать дату", zh: "選擇日期", en: "Pick a date"),
+        .addedToCalendar: .init(ru: "Добавлено в календарь", zh: "已加入日曆", en: "Added to calendar"),
+        .wheelTitle: .init(ru: "Колесо фортуны", zh: "幸運轉盤", en: "Wheel of fortune"),
+        .wheelSpin: .init(ru: "Крутить", zh: "轉！", en: "Spin"),
+        .wheelOptionPlaceholder: .init(ru: "Добавить вариант…", zh: "新增選項…", en: "Add an option…"),
+        .wheelNeedOptions: .init(ru: "Нужно от 2 до 8 вариантов", zh: "需要 2 至 8 個選項", en: "You need 2 to 8 options"),
+        .wheelResult: .init(ru: "Выпало:", zh: "結果：", en: "It's:"),
+        .wheelFromJar: .init(ru: "Из копилки", zh: "從收集箱", en: "From the jar"),
+        .wheelOptions: .init(ru: "Варианты", zh: "選項", en: "Options"),
         .pinsDontMatch: .init(ru: "Коды не совпадают", zh: "兩次輸入的 PIN 碼不一樣", en: "The PINs don't match"),
     ]
 }

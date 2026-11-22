@@ -10,6 +10,7 @@ final class RoomStore {
     private(set) var events: [PlanEvent] = []
     private(set) var ideas: [Idea] = []
     private(set) var coupons: [Coupon] = []
+    private(set) var swipeSessions: [SwipeSession] = []
 
     private(set) var connectedRoomId: String?
     @ObservationIgnored private let backend: RoomBackend
@@ -25,7 +26,7 @@ final class RoomStore {
     func connect(roomId: String) {
         guard connectedRoomId != roomId else { return }
         connectedRoomId = roomId
-        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []
+        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []
         backend.connect(roomId: roomId) { [weak self] update in
             DispatchQueue.main.async { self?.apply(update) }
         }
@@ -34,7 +35,7 @@ final class RoomStore {
     func disconnect() {
         backend.disconnect()
         connectedRoomId = nil
-        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []
+        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []
     }
 
     private func apply(_ update: RoomUpdate) {
@@ -45,6 +46,9 @@ final class RoomStore {
         case .events(let value): events = value
         case .ideas(let value): ideas = value
         case .coupons(let value): coupons = value
+        case .swipeSessions(let value):
+            swipeSessions = value
+            detectSwipeMatch()
         }
     }
 
@@ -145,6 +149,44 @@ final class RoomStore {
     private static func couponOrder(_ a: Coupon, _ b: Coupon) -> Bool {
         if a.isRedeemed != b.isRedeemed { return !a.isRedeemed }
         return a.createdAt > b.createdAt
+    }
+
+    // MARK: Swipe Match
+
+    /// Текущая сессия — самая свежая (активная или уже с совпадением).
+    var currentSwipeSession: SwipeSession? {
+        swipeSessions.max { $0.createdAt < $1.createdAt }
+    }
+
+    var swipeableIdeas: [Idea] {
+        ideas.filter { !$0.isScheduled }
+            .sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+    }
+
+    func startSwipeSession() {
+        backend.createSwipeSession(SwipeSession())
+    }
+
+    func vote(_ idea: Idea, like: Bool, in session: SwipeSession, as partner: Partner) {
+        backend.voteSwipe(sessionId: session.id, ideaId: idea.id, like: like, for: partner)
+    }
+
+    /// Как только оба свайпнули одну идею вправо — фиксируем Match (запись идемпотентна для обоих iPhone).
+    private func detectSwipeMatch() {
+        guard let session = currentSwipeSession, session.status == .active,
+              let ideaId = session.mutualLike else { return }
+        backend.setSwipeMatch(sessionId: session.id, ideaId: ideaId)
+    }
+
+    func idea(id: String?) -> Idea? {
+        guard let id else { return nil }
+        return ideas.first { $0.id == id }
+    }
+
+    /// Добавить в календарь произвольный план (например, результат колеса фортуны).
+    func addPlan(title: String, on date: Date, category: PlanCategory = .special, by partner: Partner) {
+        backend.saveEvent(PlanEvent(title: title, date: DayKey.string(date), time: nil,
+                                    category: category, note: "", createdBy: partner))
     }
 
     // MARK: Queries

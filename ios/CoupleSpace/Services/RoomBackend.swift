@@ -7,6 +7,7 @@ enum RoomUpdate {
     case events([PlanEvent])
     case ideas([Idea])
     case coupons([Coupon])
+    case swipeSessions([SwipeSession])
 }
 
 /// Отписка от слушателя (например, комментариев одной карточки).
@@ -44,4 +45,9 @@ protocol RoomBackend: AnyObject {
     // Купоны
     func saveCoupon(_ coupon: Coupon)
     func deleteCoupon(id: String)
+
+    // Свайпы
+    func createSwipeSession(_ session: SwipeSession)
+    func voteSwipe(sessionId: String, ideaId: String, like: Bool, for partner: Partner)
+    func setSwipeMatch(sessionId: String, ideaId: String)
 }

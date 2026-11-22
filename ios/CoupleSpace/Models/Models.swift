@@ -108,6 +108,29 @@ struct QuizComment: Codable, Identifiable, Hashable {
     var createdAt: Date
 }
 
+// MARK: - Swipe Match (ТЗ v2, 2.1)
+
+/// rooms/{roomId}/swipeSessions/{sessionId}
+struct SwipeSession: Codable, Identifiable, Hashable {
+    enum Status: String, Codable { case active, matched }
+
+    var id: String = UUID().uuidString
+    var status: Status = .active
+    var votesA: [String: Bool] = [:]
+    var votesB: [String: Bool] = [:]
+    var matchedIdeaId: String?
+    var createdAt: Date = Date()
+
+    func votes(for partner: Partner) -> [String: Bool] {
+        partner == .a ? votesA : votesB
+    }
+
+    /// Первая идея, которую оба свайпнули вправо.
+    var mutualLike: String? {
+        votesA.keys.sorted().first { votesA[$0] == true && votesB[$0] == true }
+    }
+}
+
 // MARK: - Coupons (ТЗ v2, 2.3)
 
 /// rooms/{roomId}/coupons/{couponId}
