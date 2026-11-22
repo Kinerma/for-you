@@ -127,7 +127,7 @@ enum L: String {
     case enterPin, wrongPin, useFaceID, unlockReason, lockHint
     // Onboarding
     case onbTitle, onbSubtitle, whoAreYou, partnerA, partnerB, yourName, createRoom, joinRoom
-    case roomCodePlaceholder, continueAction, defaultPinNote
+    case roomCodePlaceholder, continueAction, pinSetupHint, createPin, confirmPin, pinsDontMatch
 
     struct Entry { let ru: String; let zh: String; let en: String }
 
@@ -233,13 +233,16 @@ enum L: String {
         .onbTitle: .init(ru: "Наше пространство", zh: "我們的小天地", en: "Our little space"),
         .onbSubtitle: .init(ru: "Создай комнату или подключись к комнате партнёра", zh: "建立房間，或加入對方的房間", en: "Create a room or join your partner's"),
         .whoAreYou: .init(ru: "Кто ты?", zh: "你是哪一位？", en: "Who are you?"),
-        .partnerA: .init(ru: "Партнёр А", zh: "伴侶 A", en: "Partner A"),
-        .partnerB: .init(ru: "Партнёр Б", zh: "伴侶 B", en: "Partner B"),
+        .partnerA: .init(ru: "Парень", zh: "男朋友", en: "Boyfriend"),
+        .partnerB: .init(ru: "Девушка", zh: "女朋友", en: "Girlfriend"),
         .yourName: .init(ru: "Твоё имя", zh: "你的名字", en: "Your name"),
         .createRoom: .init(ru: "Создать комнату", zh: "建立房間", en: "Create a room"),
         .joinRoom: .init(ru: "У меня есть код", zh: "我有代碼", en: "I have a code"),
         .roomCodePlaceholder: .init(ru: "Код комнаты", zh: "房間代碼", en: "Room code"),
         .continueAction: .init(ru: "Продолжить", zh: "繼續", en: "Continue"),
-        .defaultPinNote: .init(ru: "PIN-код по умолчанию: 1122. Его можно сменить в настройках.", zh: "預設 PIN 碼是 1122，可以在設定中更改。", en: "The default PIN is 1122. You can change it in Settings."),
+        .pinSetupHint: .init(ru: "Придумай 4-значный PIN-код: он нужен, чтобы открывать приложение. Его можно сменить в настройках.", zh: "設定一個 4 位數 PIN 碼，用來打開 App。之後可以在設定中更改。", en: "Choose a 4-digit PIN to open the app. You can change it later in Settings."),
+        .createPin: .init(ru: "Придумай PIN-код", zh: "設定 PIN 碼", en: "Choose a PIN"),
+        .confirmPin: .init(ru: "Повтори PIN-код", zh: "再輸入一次 PIN 碼", en: "Repeat the PIN"),
+        .pinsDontMatch: .init(ru: "Коды не совпадают", zh: "兩次輸入的 PIN 碼不一樣", en: "The PINs don't match"),
     ]
 }

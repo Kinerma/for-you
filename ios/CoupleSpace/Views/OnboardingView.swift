@@ -10,13 +10,17 @@ struct OnboardingView: View {
     @State private var name = ""
     @State private var joining = false
     @State private var code = ""
+    @State private var pin = ""
+    @State private var pinRepeat = ""
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var normalizedCode: String {
         code.uppercased().filter { $0.isLetter || $0.isNumber }
     }
+    private var pinValid: Bool { pin.count == 4 && pin == pinRepeat }
+    private var pinMismatch: Bool { pinRepeat.count == 4 && pin.count == 4 && pin != pinRepeat }
     private var canContinue: Bool {
-        !trimmedName.isEmpty && (!joining || normalizedCode.count >= 4)
+        !trimmedName.isEmpty && (!joining || normalizedCode.count >= 4) && pinValid
     }
 
     var body: some View {
@@ -63,9 +67,16 @@ struct OnboardingView: View {
                             .font(.system(.title3, design: .monospaced))
                     }
 
-                    Text(loc.t(.defaultPinNote))
-                        .font(.appCaption)
-                        .foregroundStyle(Palette.inkSoft)
+                    VStack(alignment: .leading, spacing: 10) {
+                        CardLabel(text: loc.t(.createPin), symbol: "lock.fill")
+                        pinField(loc.t(.createPin), text: $pin)
+                        pinField(loc.t(.confirmPin), text: $pinRepeat)
+                        Text(pinMismatch ? loc.t(.pinsDontMatch) : loc.t(.pinSetupHint))
+                            .font(.appCaption)
+                            .foregroundStyle(pinMismatch ? Palette.rose : Palette.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.top, 4)
                 }
                 .glassCard()
 
@@ -86,8 +97,8 @@ struct OnboardingView: View {
             role = partner
         } label: {
             VStack(spacing: 6) {
-                Image(systemName: partner == .a ? "sun.max.fill" : "moon.stars.fill")
-                    .font(.title2)
+                Text(partner == .a ? "♂" : "♀")
+                    .font(.system(size: 30, weight: .semibold))
                 Text(title).font(.appSubheadline.weight(.semibold))
             }
             .frame(maxWidth: .infinity)
@@ -101,8 +112,24 @@ struct OnboardingView: View {
         .buttonStyle(.plain)
     }
 
+    private func pinField(_ placeholder: String, text: Binding<String>) -> some View {
+        SecureField(placeholder, text: text)
+            .keyboardType(.numberPad)
+            .textContentType(.oneTimeCode)
+            .font(.system(.title3, design: .rounded))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.white.opacity(0.8), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Palette.sakura, lineWidth: 1))
+            .onChange(of: text.wrappedValue) { _, value in
+                let digits = String(value.filter(\.isNumber).prefix(4))
+                if digits != value { text.wrappedValue = digits }
+            }
+    }
+
     private func submit() {
         guard canContinue else { return }
+        PinStore.save(pin)
         let roomId = joining ? normalizedCode : AppSession.generateRoomCode()
         store.connect(roomId: roomId)
         if !joining { store.createRoom() }

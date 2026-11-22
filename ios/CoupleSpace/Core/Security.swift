@@ -4,13 +4,14 @@ import Security
 
 /// PIN-код хранится в Keychain.
 enum PinStore {
-    static let defaultPin = "1122"
     private static let service = "com.kinerma.couplespace"
     private static let account = "pin"
 
     static var current: String {
-        read() ?? defaultPin
+        read() ?? ""
     }
+
+    static var hasPin: Bool { !(read() ?? "").isEmpty }
 
     static func save(_ pin: String) {
         let data = Data(pin.utf8)

@@ -39,6 +39,7 @@ final class AppSession {
         name = d.string(forKey: Keys.name) ?? ""
         roomId = d.string(forKey: Keys.roomId) ?? ""
         faceIDEnabled = d.object(forKey: Keys.faceID) as? Bool ?? true
+        isLocked = PinStore.hasPin
     }
 
     var isOnboarded: Bool { role != nil && !roomId.isEmpty }
@@ -62,7 +63,7 @@ final class AppSession {
     // MARK: Lock
 
     func lock() {
-        guard isOnboarded else { return }
+        guard isOnboarded, PinStore.hasPin else { return }
         isLocked = true
     }
 
