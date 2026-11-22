@@ -128,6 +128,12 @@ enum L: String {
     // Onboarding
     case onbTitle, onbSubtitle, whoAreYou, partnerA, partnerB, yourName, createRoom, joinRoom
     case roomCodePlaceholder, continueAction, pinSetupHint, createPin, confirmPin, pinsDontMatch
+    // v2: Coupons
+    case tabSurprises, coupons, couponsForMe, couponsFromMe, newCoupon, addCoupon, couponTitle, couponDescription
+    case couponIdeas, scratchHint, couponUse, couponUsed, couponNotOpened, couponOpened, couponHidden
+    case couponsEmptyForMe, couponsEmptyFromMe, couponUseConfirm, couponFrom, couponFor, couponGive
+    // v2: Reactions & comments
+    case commentPlaceholder
 
     struct Entry { let ru: String; let zh: String; let en: String }
 
@@ -243,6 +249,28 @@ enum L: String {
         .pinSetupHint: .init(ru: "Придумай 4-значный PIN-код: он нужен, чтобы открывать приложение. Его можно сменить в настройках.", zh: "設定一個 4 位數 PIN 碼，用來打開 App。之後可以在設定中更改。", en: "Choose a 4-digit PIN to open the app. You can change it later in Settings."),
         .createPin: .init(ru: "Придумай PIN-код", zh: "設定 PIN 碼", en: "Choose a PIN"),
         .confirmPin: .init(ru: "Повтори PIN-код", zh: "再輸入一次 PIN 碼", en: "Repeat the PIN"),
+        .tabSurprises: .init(ru: "Сюрпризы", zh: "驚喜", en: "Surprises"),
+        .coupons: .init(ru: "Купоны желаний", zh: "願望券", en: "Wish coupons"),
+        .couponsForMe: .init(ru: "Для меня", zh: "給我的", en: "For me"),
+        .couponsFromMe: .init(ru: "От меня", zh: "我送出的", en: "From me"),
+        .newCoupon: .init(ru: "Новый купон", zh: "新願望券", en: "New coupon"),
+        .addCoupon: .init(ru: "+ Подарить купон", zh: "+ 送一張願望券", en: "+ Give a coupon"),
+        .couponTitle: .init(ru: "Что дарим?", zh: "送甚麼？", en: "What's the gift?"),
+        .couponDescription: .init(ru: "Подробности (необязательно)", zh: "詳情（可選）", en: "Details (optional)"),
+        .couponIdeas: .init(ru: "Идеи", zh: "靈感", en: "Ideas"),
+        .scratchHint: .init(ru: "Сотри пальцем", zh: "用手指刮開", en: "Scratch to reveal"),
+        .couponUse: .init(ru: "Использовать", zh: "使用", en: "Use it"),
+        .couponUsed: .init(ru: "Использован", zh: "已使用", en: "Used"),
+        .couponNotOpened: .init(ru: "Ещё не открыт", zh: "還未刮開", en: "Not opened yet"),
+        .couponOpened: .init(ru: "Открыт", zh: "已刮開", en: "Opened"),
+        .couponHidden: .init(ru: "Купон-сюрприз", zh: "驚喜願望券", en: "Surprise coupon"),
+        .couponsEmptyForMe: .init(ru: "Пока купонов нет. Когда партнёр подарит купон, он появится здесь.", zh: "暫時沒有願望券。對方送你的時候會出現在這裡。", en: "No coupons yet. When your partner gives you one, it'll show up here."),
+        .couponsEmptyFromMe: .init(ru: "Подари первый купон", zh: "送出第一張願望券吧", en: "Give your first coupon"),
+        .couponUseConfirm: .init(ru: "Партнёру придёт уведомление.", zh: "對方會收到通知。", en: "Your partner will be notified."),
+        .couponFrom: .init(ru: "От:", zh: "來自：", en: "From:"),
+        .couponFor: .init(ru: "Для:", zh: "送給：", en: "For:"),
+        .couponGive: .init(ru: "Подарить", zh: "送出", en: "Give"),
+        .commentPlaceholder: .init(ru: "Написать приписку…", zh: "寫句小留言…", en: "Add a little note…"),
         .pinsDontMatch: .init(ru: "Коды не совпадают", zh: "兩次輸入的 PIN 碼不一樣", en: "The PINs don't match"),
     ]
 }

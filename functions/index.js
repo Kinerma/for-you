@@ -23,6 +23,21 @@ const TEXT = {
     zh_Hant: (n, t) => [`${n} 新增了計劃`, t],
     en: (n, t) => [`${n} added a plan`, t],
   },
+  couponGiven: {
+    ru: (n, t) => [`${n} подарил(а) тебе купон`, "Сотри защитный слой, чтобы узнать, что внутри 🎟️"],
+    zh_Hant: (n, t) => [`${n} 送了你一張願望券`, "刮開看看裡面是甚麼 🎟️"],
+    en: (n, t) => [`${n} gave you a coupon`, "Scratch it to see what's inside 🎟️"],
+  },
+  couponRedeemed: {
+    ru: (n, t) => [`${n} использует купон`, t],
+    zh_Hant: (n, t) => [`${n} 使用了願望券`, t],
+    en: (n, t) => [`${n} is using a coupon`, t],
+  },
+  comment: {
+    ru: (n, t) => [`Приписка от ${n}`, t],
+    zh_Hant: (n, t) => [`${n} 留了言`, t],
+    en: (n, t) => [`A note from ${n}`, t],
+  },
   idea: {
     ru: (n, t) => [`Новая идея от ${n}`, t],
     zh_Hant: (n, t) => [`${n} 放了一個新點子`, t],
@@ -69,4 +84,27 @@ exports.onIdeaCreated = onDocumentCreated("rooms/{roomId}/ideas/{ideaId}", async
   const data = event.data && event.data.data();
   if (!data || !data.createdBy) return;
   await notify(event.params.roomId, data.createdBy, "idea", data.title || "");
+});
+
+// v2: купоны — уведомить получателя о новом купоне и дарителя об использовании.
+exports.onCouponCreated = onDocumentCreated("rooms/{roomId}/coupons/{couponId}", async (event) => {
+  const data = event.data && event.data.data();
+  if (!data || !data.createdBy) return;
+  await notify(event.params.roomId, data.createdBy, "couponGiven");
+});
+
+exports.onCouponUpdated = onDocumentWritten("rooms/{roomId}/coupons/{couponId}", async (event) => {
+  const before = event.data.before.exists ? event.data.before.data() : null;
+  const after = event.data.after.exists ? event.data.after.data() : null;
+  if (!before || !after || !after.recipientId) return;
+  if (after.isRedeemed && !before.isRedeemed) {
+    await notify(event.params.roomId, after.recipientId, "couponRedeemed", `${after.emoji || ""} ${after.title || ""}`.trim());
+  }
+});
+
+// v2: приписки к ответам в опросе.
+exports.onQuizComment = onDocumentCreated("rooms/{roomId}/quizAnswers/{questionId}/comments/{commentId}", async (event) => {
+  const data = event.data && event.data.data();
+  if (!data || !data.senderId) return;
+  await notify(event.params.roomId, data.senderId, "comment", data.text || "");
 });

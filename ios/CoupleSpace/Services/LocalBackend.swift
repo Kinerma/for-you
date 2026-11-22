@@ -10,11 +10,14 @@ final class LocalBackend: RoomBackend {
         var answers: [String: QuizAnswer] = [:]
         var events: [String: PlanEvent] = [:]
         var ideas: [String: Idea] = [:]
+        var coupons: [String: Coupon] = [:]
+        var comments: [String: [QuizComment]] = [:]
     }
 
     private var state = State()
     private var roomId: String?
     private var onUpdate: ((RoomUpdate) -> Void)?
+    private var commentObservers: [String: [UUID: ([QuizComment]) -> Void]] = [:]
 
     func connect(roomId: String, onUpdate: @escaping (RoomUpdate) -> Void) {
         self.roomId = roomId
@@ -70,6 +73,45 @@ final class LocalBackend: RoomBackend {
     func saveIdea(_ idea: Idea) { state.ideas[idea.id] = idea; commit() }
     func deleteIdea(id: String) { state.ideas[id] = nil; commit() }
 
+    func setReaction(_ emoji: String?, questionId: String, for partner: Partner) {
+        guard var answer = state.answers[questionId] else { return }
+        switch partner {
+        case .a: answer.reactionA = emoji
+        case .b: answer.reactionB = emoji
+        }
+        state.answers[questionId] = answer
+        commit()
+    }
+
+    func addComment(_ comment: QuizComment, questionId: String) {
+        state.comments[questionId, default: []].append(comment)
+        commit()
+        notifyComments(questionId)
+    }
+
+    func deleteComment(id: String, questionId: String) {
+        state.comments[questionId]?.removeAll { $0.id == id }
+        commit()
+        notifyComments(questionId)
+    }
+
+    func observeComments(questionId: String, onUpdate: @escaping ([QuizComment]) -> Void) -> Subscription {
+        let token = UUID()
+        commentObservers[questionId, default: [:]][token] = onUpdate
+        onUpdate(state.comments[questionId] ?? [])
+        return Subscription { [weak self] in
+            self?.commentObservers[questionId]?[token] = nil
+        }
+    }
+
+    private func notifyComments(_ questionId: String) {
+        let list = state.comments[questionId] ?? []
+        commentObservers[questionId]?.values.forEach { $0(list) }
+    }
+
+    func saveCoupon(_ coupon: Coupon) { state.coupons[coupon.id] = coupon; commit() }
+    func deleteCoupon(id: String) { state.coupons[id] = nil; commit() }
+
     // MARK: Private
 
     private func commit() {
@@ -88,6 +130,7 @@ final class LocalBackend: RoomBackend {
         onUpdate(.answers(state.answers))
         onUpdate(.events(Array(state.events.values)))
         onUpdate(.ideas(Array(state.ideas.values)))
+        onUpdate(.coupons(Array(state.coupons.values)))
     }
 
     private func fileURL(_ roomId: String) -> URL {

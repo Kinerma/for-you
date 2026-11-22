@@ -9,6 +9,7 @@ final class RoomStore {
     private(set) var answers: [String: QuizAnswer] = [:]
     private(set) var events: [PlanEvent] = []
     private(set) var ideas: [Idea] = []
+    private(set) var coupons: [Coupon] = []
 
     private(set) var connectedRoomId: String?
     @ObservationIgnored private let backend: RoomBackend
@@ -24,7 +25,7 @@ final class RoomStore {
     func connect(roomId: String) {
         guard connectedRoomId != roomId else { return }
         connectedRoomId = roomId
-        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []
+        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []
         backend.connect(roomId: roomId) { [weak self] update in
             DispatchQueue.main.async { self?.apply(update) }
         }
@@ -33,7 +34,7 @@ final class RoomStore {
     func disconnect() {
         backend.disconnect()
         connectedRoomId = nil
-        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []
+        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []
     }
 
     private func apply(_ update: RoomUpdate) {
@@ -43,6 +44,7 @@ final class RoomStore {
         case .answers(let value): answers = value
         case .events(let value): events = value
         case .ideas(let value): ideas = value
+        case .coupons(let value): coupons = value
         }
     }
 
@@ -82,6 +84,67 @@ final class RoomStore {
         var updated = idea
         updated.isScheduled = true
         backend.saveIdea(updated)
+    }
+
+    // MARK: Reactions & comments
+
+    func setReaction(_ emoji: String?, questionId: String, as partner: Partner) {
+        backend.setReaction(emoji, questionId: questionId, for: partner)
+    }
+
+    func addComment(_ text: String, questionId: String, as partner: Partner) {
+        backend.addComment(QuizComment(senderId: partner, text: text, createdAt: Date()), questionId: questionId)
+    }
+
+    func deleteComment(_ comment: QuizComment, questionId: String) {
+        backend.deleteComment(id: comment.id, questionId: questionId)
+    }
+
+    func observeComments(questionId: String, onUpdate: @escaping ([QuizComment]) -> Void) -> Subscription {
+        backend.observeComments(questionId: questionId) { comments in
+            DispatchQueue.main.async { onUpdate(comments) }
+        }
+    }
+
+    // MARK: Coupons
+
+    func giveCoupon(title: String, description: String, emoji: String, from partner: Partner) {
+        backend.saveCoupon(Coupon(
+            title: title, description: description, emoji: emoji,
+            createdBy: partner, recipientId: partner.other
+        ))
+    }
+
+    func markScratched(_ coupon: Coupon) {
+        guard !coupon.isScratched else { return }
+        var updated = coupon
+        updated.isScratched = true
+        backend.saveCoupon(updated)
+    }
+
+    func redeem(_ coupon: Coupon) {
+        guard !coupon.isRedeemed else { return }
+        var updated = coupon
+        updated.isScratched = true
+        updated.isRedeemed = true
+        updated.redeemedAt = Date()
+        backend.saveCoupon(updated)
+    }
+
+    func delete(_ coupon: Coupon) { backend.deleteCoupon(id: coupon.id) }
+
+    func coupons(for partner: Partner) -> [Coupon] {
+        coupons.filter { $0.recipientId == partner }.sorted(by: Self.couponOrder)
+    }
+
+    func coupons(from partner: Partner) -> [Coupon] {
+        coupons.filter { $0.createdBy == partner }.sorted(by: Self.couponOrder)
+    }
+
+    /// Сначала неиспользованные, внутри — новые сверху.
+    private static func couponOrder(_ a: Coupon, _ b: Coupon) -> Bool {
+        if a.isRedeemed != b.isRedeemed { return !a.isRedeemed }
+        return a.createdAt > b.createdAt
     }
 
     // MARK: Queries

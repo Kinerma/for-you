@@ -6,6 +6,15 @@ enum RoomUpdate {
     case answers([String: QuizAnswer])
     case events([PlanEvent])
     case ideas([Idea])
+    case coupons([Coupon])
+}
+
+/// Отписка от слушателя (например, комментариев одной карточки).
+final class Subscription {
+    private var cancel: (() -> Void)?
+    init(_ cancel: @escaping () -> Void) { self.cancel = cancel }
+    func cancelNow() { cancel?(); cancel = nil }
+    deinit { cancel?() }
 }
 
 /// Источник данных общей комнаты. Firestore — когда в проекте есть GoogleService-Info.plist,
@@ -25,4 +34,14 @@ protocol RoomBackend: AnyObject {
     func deleteEvent(id: String)
     func saveIdea(_ idea: Idea)
     func deleteIdea(id: String)
+
+    // Реакции и комментарии к ответам
+    func setReaction(_ emoji: String?, questionId: String, for partner: Partner)
+    func addComment(_ comment: QuizComment, questionId: String)
+    func deleteComment(id: String, questionId: String)
+    func observeComments(questionId: String, onUpdate: @escaping ([QuizComment]) -> Void) -> Subscription
+
+    // Купоны
+    func saveCoupon(_ coupon: Coupon)
+    func deleteCoupon(id: String)
 }

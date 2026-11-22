@@ -67,6 +67,9 @@ struct MainTabView: View {
             CalendarView()
                 .tabItem { Label(loc.t(.tabCalendar), systemImage: "calendar") }
                 .tag(AppTab.calendar)
+            SurprisesView()
+                .tabItem { Label(loc.t(.tabSurprises), systemImage: "gift.fill") }
+                .tag(AppTab.surprises)
         }
         .sheet(isPresented: $session.showSettings) {
             SettingsSheet()

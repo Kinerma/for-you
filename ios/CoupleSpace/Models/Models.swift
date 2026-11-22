@@ -82,12 +82,63 @@ struct QuizAnswer: Codable, Hashable {
     var answerA: String?
     var answerB: String?
     var updatedAt: Date
+    var reactionA: String?   // reactions.partnerA
+    var reactionB: String?   // reactions.partnerB
 
     func answer(for partner: Partner) -> String? {
         let value = partner == .a ? answerA : answerB
         guard let value, !value.isEmpty else { return nil }
         return value
     }
+
+    func reaction(for partner: Partner) -> String? {
+        let value = partner == .a ? reactionA : reactionB
+        guard let value, !value.isEmpty else { return nil }
+        return value
+    }
+
+    static let reactionChoices = ["🤍", "🥹", "😂", "✨", "🔥"]
+}
+
+/// rooms/{roomId}/quizAnswers/{questionId}/comments/{commentId}
+struct QuizComment: Codable, Identifiable, Hashable {
+    var id: String = UUID().uuidString
+    var senderId: Partner
+    var text: String
+    var createdAt: Date
+}
+
+// MARK: - Coupons (ТЗ v2, 2.3)
+
+/// rooms/{roomId}/coupons/{couponId}
+struct Coupon: Codable, Identifiable, Hashable {
+    var id: String = UUID().uuidString
+    var title: String
+    var description: String
+    var emoji: String
+    var createdBy: Partner
+    var recipientId: Partner
+    var isScratched: Bool = false
+    var isRedeemed: Bool = false
+    var redeemedAt: Date?
+    var createdAt: Date = Date()
+
+    static let emojiChoices = ["🎁", "💌", "🧋", "🎬", "🍜", "🥞", "💆", "🌸", "✈️", "🎶", "🍰", "🛍️"]
+
+    struct Preset: Identifiable {
+        let emoji: String
+        let title: LocalizedText
+        var id: String { title.en }
+    }
+
+    static let presets: [Preset] = [
+        .init(emoji: "🎁", title: .init(ru: "Свидание-сюрприз", zh_Hant: "驚喜約會", en: "Surprise date")),
+        .init(emoji: "🎬", title: .init(ru: "Выбор фильма без споров", zh_Hant: "今晚的電影由你決定", en: "Movie pick, no arguing")),
+        .init(emoji: "🧋", title: .init(ru: "Любой бабл-ти за мой счёт", zh_Hant: "任何一杯珍珠奶茶我請", en: "Any bubble tea on me")),
+        .init(emoji: "🥞", title: .init(ru: "Завтрак в постель", zh_Hant: "床上早餐", en: "Breakfast in bed")),
+        .init(emoji: "💆", title: .init(ru: "Массаж 15 минут", zh_Hant: "15 分鐘按摩", en: "15-minute massage")),
+        .init(emoji: "🍜", title: .init(ru: "Ужин, который готовлю я", zh_Hant: "我親手煮的晚餐", en: "Dinner cooked by me")),
+    ]
 }
 
 // MARK: - Mood

@@ -344,6 +344,11 @@ struct AnswersArchiveView: View {
                 revealed: mine != nil
             )
 
+            if mine != nil && theirs != nil {
+                Divider().overlay(Palette.sakura)
+                AnswerThreadView(answer: answer)
+            }
+
             if mine == nil {
                 Button(loc.t(.qotdAnswer)) {
                     session.focusedQuestionId = question.id

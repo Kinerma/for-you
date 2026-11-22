@@ -79,7 +79,9 @@ final class FirestoreBackend: RoomBackend {
                     type: d["type"] as? String ?? "",
                     answerA: d["answerA"] as? String,
                     answerB: d["answerB"] as? String,
-                    updatedAt: (d["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
+                    updatedAt: (d["updatedAt"] as? Timestamp)?.dateValue() ?? Date(),
+                    reactionA: (d["reactions"] as? [String: Any])?["partnerA"] as? String,
+                    reactionB: (d["reactions"] as? [String: Any])?["partnerB"] as? String
                 )
             }
             onUpdate(.answers(result))
@@ -117,6 +119,28 @@ final class FirestoreBackend: RoomBackend {
                 )
             }
             onUpdate(.ideas(ideas))
+        })
+
+        listeners.append(ref.collection("coupons").addSnapshotListener { snapshot, _ in
+            let coupons: [Coupon] = (snapshot?.documents ?? []).compactMap { doc in
+                let d = doc.data(with: .estimate)
+                guard let title = d["title"] as? String,
+                      let createdBy = Partner(rawValue: d["createdBy"] as? String ?? ""),
+                      let recipient = Partner(rawValue: d["recipientId"] as? String ?? "") else { return nil }
+                return Coupon(
+                    id: doc.documentID,
+                    title: title,
+                    description: d["description"] as? String ?? "",
+                    emoji: d["emoji"] as? String ?? "🎁",
+                    createdBy: createdBy,
+                    recipientId: recipient,
+                    isScratched: d["isScratched"] as? Bool ?? false,
+                    isRedeemed: d["isRedeemed"] as? Bool ?? false,
+                    redeemedAt: (d["redeemedAt"] as? Timestamp)?.dateValue(),
+                    createdAt: (d["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+                )
+            }
+            onUpdate(.coupons(coupons))
         })
     }
 
@@ -196,5 +220,79 @@ final class FirestoreBackend: RoomBackend {
 
     func deleteIdea(id: String) {
         write { $0.collection("ideas").document(id).delete() }
+    }
+
+    // MARK: Reactions & comments
+
+    func setReaction(_ emoji: String?, questionId: String, for partner: Partner) {
+        write {
+            $0.collection("quizAnswers").document(questionId).updateData([
+                "reactions.partner\(partner.rawValue)": emoji.map { $0 as Any } ?? FieldValue.delete(),
+            ])
+        }
+    }
+
+    func addComment(_ comment: QuizComment, questionId: String) {
+        write {
+            $0.collection("quizAnswers").document(questionId).collection("comments").document(comment.id).setData([
+                "senderId": comment.senderId.rawValue,
+                "text": comment.text,
+                "createdAt": FieldValue.serverTimestamp(),
+            ])
+        }
+    }
+
+    func deleteComment(id: String, questionId: String) {
+        write { $0.collection("quizAnswers").document(questionId).collection("comments").document(id).delete() }
+    }
+
+    func observeComments(questionId: String, onUpdate: @escaping ([QuizComment]) -> Void) -> Subscription {
+        guard let ref = room else { return Subscription {} }
+        var registration: ListenerRegistration?
+        var cancelled = false
+        signInIfNeeded {
+            guard !cancelled else { return }
+            registration = ref.collection("quizAnswers").document(questionId).collection("comments")
+                .order(by: "createdAt")
+                .addSnapshotListener { snapshot, _ in
+                    let comments: [QuizComment] = (snapshot?.documents ?? []).compactMap { doc in
+                        let d = doc.data(with: .estimate)
+                        guard let sender = Partner(rawValue: d["senderId"] as? String ?? ""),
+                              let text = d["text"] as? String else { return nil }
+                        return QuizComment(
+                            id: doc.documentID,
+                            senderId: sender,
+                            text: text,
+                            createdAt: (d["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+                        )
+                    }
+                    onUpdate(comments)
+                }
+        }
+        return Subscription {
+            cancelled = true
+            registration?.remove()
+        }
+    }
+
+    // MARK: Coupons
+
+    func saveCoupon(_ coupon: Coupon) {
+        var data: [String: Any] = [
+            "title": coupon.title,
+            "description": coupon.description,
+            "emoji": coupon.emoji,
+            "createdBy": coupon.createdBy.rawValue,
+            "recipientId": coupon.recipientId.rawValue,
+            "isScratched": coupon.isScratched,
+            "isRedeemed": coupon.isRedeemed,
+            "createdAt": Timestamp(date: coupon.createdAt),
+        ]
+        data["redeemedAt"] = coupon.redeemedAt.map { Timestamp(date: $0) as Any } ?? NSNull()
+        write { $0.collection("coupons").document(coupon.id).setData(data) }
+    }
+
+    func deleteCoupon(id: String) {
+        write { $0.collection("coupons").document(id).delete() }
     }
 }

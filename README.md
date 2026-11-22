@@ -76,4 +76,17 @@ index.html               старый сайт-опрос (GitHub Pages), не �
 | Календарь и копилка идей | `Views/CalendarView.swift` |
 | Задел под виджет | `Services/WidgetBridge.swift` |
 
+## Интерактивные фичи v2
+
+ТЗ: [`docs/TZ-v2.md`](docs/TZ-v2.md). Модули внедряются по одному.
+
+- [x] **Модуль 1.** Скретч-купоны (вкладка «Сюрпризы», `Views/CouponsView.swift`, `Views/Components/ScratchCard.swift`) и реакции/приписки в «Наших ответах» (`Views/AnswerThreadView.swift`)
+- [ ] Модуль 2. «Тиндер» для идей и колесо фортуны
+- [ ] Модуль 3. Эффекты настроения и «Обнять на расстоянии»
+- [ ] Модуль 4. «Насколько хорошо ты меня знаешь?»
+- [ ] Модуль 5. Полароиды с проявкой и капсула времени
+- [ ] Модуль 6. Карта воспоминаний и Doodle-виджет
+
+После изменений в `functions/` их нужно задеплоить заново: `firebase deploy --only functions`.
+
 Чтобы добавить вопросы, отредактируй `ios/CoupleSpace/Resources/couple_quiz_questions.json`: у каждого вопроса тексты на трёх языках, а `type` — `either_or` или `open`.

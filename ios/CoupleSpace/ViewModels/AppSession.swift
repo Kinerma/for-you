@@ -2,7 +2,7 @@ import SwiftUI
 import Observation
 
 enum AppTab: Hashable {
-    case home, quiz, calendar
+    case home, quiz, calendar, surprises
 }
 
 /// Профиль на этом устройстве: роль, имя, комната, блокировка и навигация.
