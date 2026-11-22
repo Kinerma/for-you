@@ -1,0 +1,12 @@
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+.swiftpm/
+# Firebase: ключи проекта не коммитим
+ios/CoupleSpace/GoogleService-Info.plist
+functions/node_modules/
+.firebase/
+*.log
+.DS_Store

@@ -1,0 +1,103 @@
+import Foundation
+
+/// Локальный режим без Firebase: данные одной комнаты хранятся в файле на устройстве.
+final class LocalBackend: RoomBackend {
+    let isCloud = false
+
+    private struct State: Codable {
+        var meta = RoomMeta()
+        var moods: [String: Mood] = [:]
+        var answers: [String: QuizAnswer] = [:]
+        var events: [String: PlanEvent] = [:]
+        var ideas: [String: Idea] = [:]
+    }
+
+    private var state = State()
+    private var roomId: String?
+    private var onUpdate: ((RoomUpdate) -> Void)?
+
+    func connect(roomId: String, onUpdate: @escaping (RoomUpdate) -> Void) {
+        self.roomId = roomId
+        self.onUpdate = onUpdate
+        state = load(roomId) ?? State()
+        emitAll()
+    }
+
+    func disconnect() {
+        roomId = nil
+        onUpdate = nil
+    }
+
+    func createRoom() {
+        if state.meta.createdAt == nil { state.meta.createdAt = Date() }
+        commit()
+    }
+
+    func setProfile(name: String, language: AppLanguage, for partner: Partner) {
+        switch partner {
+        case .a: state.meta.partnerAName = name; state.meta.langA = language.rawValue
+        case .b: state.meta.partnerBName = name; state.meta.langB = language.rawValue
+        }
+        commit()
+    }
+
+    func setMood(_ mood: Mood, for partner: Partner) {
+        state.moods[partner.rawValue] = mood
+        commit()
+    }
+
+    func setAnswer(_ value: String, question: QuizQuestion, for partner: Partner) {
+        var answer = state.answers[question.id] ?? QuizAnswer(
+            questionId: question.id, category: question.category, type: question.type.rawValue,
+            answerA: nil, answerB: nil, updatedAt: Date()
+        )
+        switch partner {
+        case .a: answer.answerA = value
+        case .b: answer.answerB = value
+        }
+        answer.updatedAt = Date()
+        state.answers[question.id] = answer
+        commit()
+    }
+
+    func saveEvent(_ event: PlanEvent) { state.events[event.id] = event; commit() }
+    func deleteEvent(id: String) { state.events[id] = nil; commit() }
+    func saveIdea(_ idea: Idea) { state.ideas[idea.id] = idea; commit() }
+    func deleteIdea(id: String) { state.ideas[id] = nil; commit() }
+
+    // MARK: Private
+
+    private func commit() {
+        if let roomId { save(state, roomId) }
+        emitAll()
+    }
+
+    private func emitAll() {
+        guard let onUpdate else { return }
+        var moods: [Partner: Mood] = [:]
+        for (key, mood) in state.moods {
+            if let partner = Partner(rawValue: key) { moods[partner] = mood }
+        }
+        onUpdate(.meta(state.meta))
+        onUpdate(.moods(moods))
+        onUpdate(.answers(state.answers))
+        onUpdate(.events(Array(state.events.values)))
+        onUpdate(.ideas(Array(state.ideas.values)))
+    }
+
+    private func fileURL(_ roomId: String) -> URL {
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("room-\(roomId).json")
+    }
+
+    private func load(_ roomId: String) -> State? {
+        guard let data = try? Data(contentsOf: fileURL(roomId)) else { return nil }
+        return try? JSONDecoder().decode(State.self, from: data)
+    }
+
+    private func save(_ state: State, _ roomId: String) {
+        guard let data = try? JSONEncoder().encode(state) else { return }
+        try? data.write(to: fileURL(roomId), options: .atomic)
+    }
+}

@@ -1,0 +1,489 @@
+{
+  "version": "1.0",
+  "languages": [
+    "ru",
+    "zh_Hant",
+    "en"
+  ],
+  "categories": [
+    {
+      "id": "comfort_and_habits",
+      "title": {
+        "ru": "Комфорт и привычки",
+        "zh_Hant": "舒適與日常習慣",
+        "en": "Comfort & Habits"
+      }
+    },
+    {
+      "id": "food_and_dates",
+      "title": {
+        "ru": "Еда и свидания",
+        "zh_Hant": "美食與約會",
+        "en": "Food & Dates"
+      }
+    },
+    {
+      "id": "dreams_and_wishlist",
+      "title": {
+        "ru": "Мечты и вишлист",
+        "zh_Hant": "夢想與願望清單",
+        "en": "Dreams & Wishlist"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "id": "q_ch_01",
+      "category": "comfort_and_habits",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Идеальный вечер пятницы после тяжёлой недели?",
+        "zh_Hant": "辛苦了一週後，最理想的星期五晚上是？",
+        "en": "Ideal Friday night after a long week?"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Уютно остаться дома под пледом",
+          "zh_Hant": "窩在家裡蓋被子放鬆",
+          "en": "Cozy night in under a blanket"
+        },
+        {
+          "id": "b",
+          "ru": "Выйти куда-нибудь погулять и сменить обстановку",
+          "zh_Hant": "出門散步或逛逛換個心情",
+          "en": "Go out for a walk and change of scenery"
+        }
+      ]
+    },
+    {
+      "id": "q_ch_02",
+      "category": "comfort_and_habits",
+      "type": "open",
+      "prompt": {
+        "ru": "Какая мелочь способна мгновенно поднять тебе настроение в плохой день?",
+        "zh_Hant": "心情不好的時候，什麼小事能瞬間讓你開心起來？",
+        "en": "What little thing can instantly brighten your mood on a bad day?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_ch_03",
+      "category": "comfort_and_habits",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Когда ты устала или расстроена, что тебе нужнее в первую очередь?",
+        "zh_Hant": "當你累了或難過的時候，你最需要先得到什麼？",
+        "en": "When you're tired or upset, what do you need most first?"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Просто обняться и помолчать рядом",
+          "zh_Hant": "安靜地抱抱、靜靜陪在身邊",
+          "en": "Just a hug and quiet company"
+        },
+        {
+          "id": "b",
+          "ru": "Выговориться и обсудить всё в деталях",
+          "zh_Hant": "好好傾訴，把所有事情聊出來",
+          "en": "Talk it out and share all the details"
+        }
+      ]
+    },
+    {
+      "id": "q_ch_04",
+      "category": "comfort_and_habits",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Ты скорее жаворонок или сова?",
+        "zh_Hant": "你是早起鳥還是夜貓子？",
+        "en": "Are you more of an early bird or a night owl?"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Люблю раннее спокойное утро",
+          "zh_Hant": "喜歡安靜的早晨",
+          "en": "Love quiet early mornings"
+        },
+        {
+          "id": "b",
+          "ru": "Живу и вдохновляюсь поздно вечером",
+          "zh_Hant": "越夜越有精神的夜貓子",
+          "en": "Come alive late at night"
+        }
+      ]
+    },
+    {
+      "id": "q_ch_05",
+      "category": "comfort_and_habits",
+      "type": "open",
+      "prompt": {
+        "ru": "Как ты обычно чувствуешь заботу и любовь сильнее всего — через слова, прикосновения, время вместе или маленькие поступки?",
+        "zh_Hant": "哪種方式最能讓你感受到愛與關心？是甜言蜜語、肢體接觸、陪伴的時間，還是貼心的小舉動？",
+        "en": "How do you feel love and care most strongly — through words, touch, quality time, or small thoughtful actions?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_ch_06",
+      "category": "comfort_and_habits",
+      "type": "open",
+      "prompt": {
+        "ru": "Есть ли какие-то бытовые мелочи, которые тебя незаметно раздражают, и мне лучше о них знать заранее?",
+        "zh_Hant": "生活中有沒有什麼會讓你默默在意的小細節，是我最好提前知道的？",
+        "en": "Are there any small everyday pet peeves that quietly bother you that I should know about?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_ch_07",
+      "category": "comfort_and_habits",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Твой идеальный способ перезагрузиться в выходной?",
+        "zh_Hant": "放假時你最喜歡的充電方式是？",
+        "en": "Your favorite way to recharge on a day off?"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Выспаться без будильника и никуда не спешить",
+          "zh_Hant": "關掉鬧鐘睡到自然醒，慢慢度過一天",
+          "en": "Sleep in with no alarm and take it slow"
+        },
+        {
+          "id": "b",
+          "ru": "Сходить в красивое место за новыми впечатлениями",
+          "zh_Hant": "去漂亮的地方走走，收集新鮮感",
+          "en": "Head somewhere pretty for fresh energy"
+        }
+      ]
+    },
+    {
+      "id": "q_ch_08",
+      "category": "comfort_and_habits",
+      "type": "open",
+      "prompt": {
+        "ru": "Какие запахи, звуки или текстуры создают для тебя ощущение полного уюта?",
+        "zh_Hant": "什麼樣的氣味、聲音或觸感會讓你覺得特別安心又療癒？",
+        "en": "What scents, sounds, or textures make you feel completely cozy and safe?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_ch_09",
+      "category": "comfort_and_habits",
+      "type": "open",
+      "prompt": {
+        "ru": "Какой комплимент тебе всегда особенно приятно слышать?",
+        "zh_Hant": "聽到什麼樣的稱讚會讓你特別開心？",
+        "en": "What kind of compliment always makes you feel extra special?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_fd_01",
+      "category": "food_and_dates",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Выбор напитка на прогулке прямо сейчас:",
+        "zh_Hant": "現在散步想喝哪一杯？",
+        "en": "Go-to drink for a walk right now:"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Матча-латте или ароматный чай",
+          "zh_Hant": "抹茶拿鐵或香濃茶飲",
+          "en": "Matcha latte or fragrant tea"
+        },
+        {
+          "id": "b",
+          "ru": "Бабл-ти или что-нибудь сладкое и сливочное",
+          "zh_Hant": "珍珠奶茶或甜甜的奶蓋飲品",
+          "en": "Bubble tea or something sweet & creamy"
+        }
+      ]
+    },
+    {
+      "id": "q_fd_02",
+      "category": "food_and_dates",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Настроение на ужин вдвоём:",
+        "zh_Hant": "兩個人的晚餐氣氛偏好：",
+        "en": "Dinner date vibe:"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Уютная маленькая раменная или локальное кафе",
+          "zh_Hant": "溫馨的拉麵店或巷弄裡的在地小館",
+          "en": "Cozy ramen spot or hidden local eatery"
+        },
+        {
+          "id": "b",
+          "ru": "Красивый ресторан с видом, куда можно нарядиться",
+          "zh_Hant": "可以盛裝打扮、有夜景的氣氛餐廳",
+          "en": "A scenic restaurant where we can dress up"
+        }
+      ]
+    },
+    {
+      "id": "q_fd_03",
+      "category": "food_and_dates",
+      "type": "open",
+      "prompt": {
+        "ru": "Какое блюдо или десерт — твоя абсолютная «еда-антистресс», от которой ты никогда не откажешься?",
+        "zh_Hant": "哪一道料理或甜點是你的終極「療癒美食」，永遠都不會拒絕？",
+        "en": "What dish or dessert is your ultimate comfort food that you'll never say no to?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_fd_04",
+      "category": "food_and_dates",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Какой формат свидания тебе ближе?",
+        "zh_Hant": "你比較喜歡哪一種約會節奏？",
+        "en": "Which date style feels more like you?"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Заранее продуманный план и брони",
+          "zh_Hant": "提前安排好行程與訂位",
+          "en": "Thoughtfully planned with reservations"
+        },
+        {
+          "id": "b",
+          "ru": "Спонтанная прогулка: куда глаза глядят",
+          "zh_Hant": "說走就走、隨興探索的漫步",
+          "en": "Spontaneous wandering wherever we feel like"
+        }
+      ]
+    },
+    {
+      "id": "q_fd_05",
+      "category": "food_and_dates",
+      "type": "open",
+      "prompt": {
+        "ru": "Если бы мы могли прямо сейчас телепортироваться в Макао, куда бы ты повела меня поесть в первую очередь?",
+        "zh_Hant": "如果我們現在可以瞬間移動到澳門，你第一個會帶我去吃什麼？",
+        "en": "If we could teleport to Macau right now, where would you take me to eat first?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_fd_06",
+      "category": "food_and_dates",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Во вкусах ты чаще на стороне...",
+        "zh_Hant": "在口味上你比較偏向哪一邊？",
+        "en": "Flavor-wise, you're usually on team..."
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Сладкое и нежное",
+          "zh_Hant": "甜甜的、溫潤清爽派",
+          "en": "Sweet & delicate"
+        },
+        {
+          "id": "b",
+          "ru": "Пряное, острое и насыщенное",
+          "zh_Hant": "香辣、重口味派",
+          "en": "Savory, spicy & bold"
+        }
+      ]
+    },
+    {
+      "id": "q_fd_07",
+      "category": "food_and_dates",
+      "type": "open",
+      "prompt": {
+        "ru": "Есть ли продукты или ингредиенты, которые ты терпеть не можешь (чтобы я никогда случайно их не заказал)?",
+        "zh_Hant": "有沒有什麼你絕對不吃的食材或地雷食物？（我一定要記下來！）",
+        "en": "Are there any foods or ingredients you really dislike so I never accidentally order them?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_fd_08",
+      "category": "food_and_dates",
+      "type": "open",
+      "prompt": {
+        "ru": "Опиши идеальное свидание на целый день, после которого ты бы подумала: «Это был лучший день!»",
+        "zh_Hant": "形容一個會讓你覺得「今天真是太棒了！」的完美一整天約會吧。",
+        "en": "Describe a full-day date that would leave you thinking, 'That was the best day ever!'"
+      },
+      "options": null
+    },
+    {
+      "id": "q_fd_09",
+      "category": "food_and_dates",
+      "type": "open",
+      "prompt": {
+        "ru": "Какой наш общий момент или свидание уже успело стать твоим любимым воспоминанием?",
+        "zh_Hant": "我們一起度過的哪個瞬間或約會，已經成為你最喜歡的回憶？",
+        "en": "Which moment or date we've shared so far is already your favorite memory?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_dw_01",
+      "category": "dreams_and_wishlist",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Наше идеальное совместное путешествие — это скорее...",
+        "zh_Hant": "我們理想中的雙人旅行會更偏向哪一種？",
+        "en": "Our dream trip together feels more like..."
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Снежные горы, онсэн и уютные вечера",
+          "zh_Hant": "雪山、溫泉與溫暖的冬日夜晚",
+          "en": "Snowy mountains, onsen & cozy nights"
+        },
+        {
+          "id": "b",
+          "ru": "Тёплое море, закаты и неспешный пляж",
+          "zh_Hant": "溫暖大海、日落與悠閒沙灘",
+          "en": "Warm ocean, sunsets & slow beach days"
+        }
+      ]
+    },
+    {
+      "id": "q_dw_02",
+      "category": "dreams_and_wishlist",
+      "type": "open",
+      "prompt": {
+        "ru": "Какое место в мире (или в Японии) ты давно мечтаешь увидеть своими глазами?",
+        "zh_Hant": "世界上（或日本）有沒有哪個地方是你一直夢想親眼去看看的？",
+        "en": "What place in the world (or in Japan) have you been dreaming of seeing with your own eyes?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_dw_03",
+      "category": "dreams_and_wishlist",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Как ты относишься к сюрпризам и подаркам?",
+        "zh_Hant": "你對驚喜和禮物比較喜歡哪種方式？",
+        "en": "How do you feel about surprises and gifts?"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Обожаю неожиданные сюрпризы без повода",
+          "zh_Hant": "超愛突如其來的小驚喜",
+          "en": "Love unexpected out-of-the-blue surprises"
+        },
+        {
+          "id": "b",
+          "ru": "Люблю, когда выбираем вместе или по вишлисту",
+          "zh_Hant": "喜歡一起挑選，或是從願望清單裡實現",
+          "en": "Love picking together or from a wishlist"
+        }
+      ]
+    },
+    {
+      "id": "q_dw_04",
+      "category": "dreams_and_wishlist",
+      "type": "open",
+      "prompt": {
+        "ru": "Назови одну маленькую «хотелку», которую ты давно откладываешь для себя, но она бы тебя порадовала.",
+        "zh_Hant": "說一個你一直想買或想做、卻總是捨不得或還沒實現的小願望吧。",
+        "en": "Name one small wish or treat you've been putting off for yourself that would make you smile."
+      },
+      "options": null
+    },
+    {
+      "id": "q_dw_05",
+      "category": "dreams_and_wishlist",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Если выбирать культурный вечер вдвоём, куда пойдём?",
+        "zh_Hant": "如果要安排一個浪漫的藝文之夜，你會選哪一個？",
+        "en": "For a cultural night out together, what would you pick?"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Мюзикл, театр или живой концерт",
+          "zh_Hant": "音樂劇、舞台劇或現場音樂會",
+          "en": "A musical, theater show, or live concert"
+        },
+        {
+          "id": "b",
+          "ru": "Выставка, музей или арт-пространство",
+          "zh_Hant": "展覽、美術館或質感藝文空間",
+          "en": "An exhibition, museum, or art space"
+        }
+      ]
+    },
+    {
+      "id": "q_dw_06",
+      "category": "dreams_and_wishlist",
+      "type": "open",
+      "prompt": {
+        "ru": "Чему новому тебе хотелось бы научиться или попробовать вместе со мной в ближайший год?",
+        "zh_Hant": "接下來這一年，有沒有什麼新事物是你很想跟我一起嘗試或學習的？",
+        "en": "What's something new you'd love for us to try or learn together in the coming year?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_dw_07",
+      "category": "dreams_and_wishlist",
+      "type": "either_or",
+      "prompt": {
+        "ru": "Какую милую традицию для нас двоих тебе хотелось бы завести первой?",
+        "zh_Hant": "你最想先建立哪一個屬於我們兩個人的專屬小儀式？",
+        "en": "Which cute couple tradition would you want to start first?"
+      },
+      "options": [
+        {
+          "id": "a",
+          "ru": "Каждый месяц пробовать новое необычное место",
+          "zh_Hant": "每個月一起去探索一個沒去過的新地方",
+          "en": "Explore one brand-new spot every month"
+        },
+        {
+          "id": "b",
+          "ru": "Собирать фотоальбом и писать короткие записки",
+          "zh_Hant": "一起收集相簿並寫下給彼此的小紙條",
+          "en": "Keep a shared photo album with little notes"
+        }
+      ]
+    },
+    {
+      "id": "q_dw_08",
+      "category": "dreams_and_wishlist",
+      "type": "open",
+      "prompt": {
+        "ru": "Какой фильм, сериал или песню ты мечтаешь обязательно посмотреть или послушать вместе со мной?",
+        "zh_Hant": "有沒有哪部電影、劇集或哪首歌，是你一直很想跟我一起看或一起聽的？",
+        "en": "What movie, show, or song have you been wanting to watch or listen to together with me?"
+      },
+      "options": null
+    },
+    {
+      "id": "q_dw_09",
+      "category": "dreams_and_wishlist",
+      "type": "open",
+      "prompt": {
+        "ru": "Какой ты представляешь себе наш самый тёплый и счастливый день через год?",
+        "zh_Hant": "你想像中，一年後的我們最溫暖幸福的一天會是什麼樣子？",
+        "en": "How do you picture our warmest, happiest day together a year from now?"
+      },
+      "options": null
+    }
+  ]
+}
