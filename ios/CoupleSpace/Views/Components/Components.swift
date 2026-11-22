@@ -33,7 +33,7 @@ struct LanguageSwitcher: View {
     }
 }
 
-/// Шапка вкладки: заголовок, переключатель языка, настройки и замок.
+/// Шапка вкладки: заголовок и кнопка настроек (язык и PIN — в настройках).
 struct TopBar: View {
     var subtitle: String?
     var title: String
@@ -42,15 +42,7 @@ struct TopBar: View {
     @Environment(AppSession.self) private var session
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                LanguageSwitcher()
-                Spacer()
-                CircleIconButton(systemName: "gearshape.fill") { session.showSettings = true }
-                    .accessibilityLabel(loc.t(.settings))
-                CircleIconButton(systemName: "lock.fill") { session.lock() }
-                    .accessibilityLabel("Lock")
-            }
+        HStack(alignment: .top, spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 if let subtitle {
                     Text(subtitle)
@@ -63,6 +55,9 @@ struct TopBar: View {
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
             }
+            Spacer()
+            CircleIconButton(systemName: "gearshape.fill") { session.showSettings = true }
+                .accessibilityLabel(loc.t(.settings))
         }
         .padding(.top, 4)
     }
