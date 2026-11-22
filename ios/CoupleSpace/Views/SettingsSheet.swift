@@ -115,11 +115,14 @@ struct ChangePinView: View {
     @State private var repeatPin = ""
     @State private var error: L?
     @State private var success = 0
+    private let hasPin = PinStore.hasPin
 
     var body: some View {
         Form {
             Section {
-                pinField(loc.t(.currentPin), text: $current)
+                if hasPin {
+                    pinField(loc.t(.currentPin), text: $current)
+                }
                 pinField(loc.t(.newPin), text: $newPin)
                 pinField(loc.t(.repeatPin), text: $repeatPin)
             } footer: {
@@ -129,7 +132,7 @@ struct ChangePinView: View {
             }
             Section {
                 Button(loc.t(.save), action: save)
-                    .disabled(current.count != 4 || newPin.count != 4 || repeatPin.count != 4)
+                    .disabled((hasPin && current.count != 4) || newPin.count != 4 || repeatPin.count != 4)
             }
         }
         .scrollContentBackground(.hidden)
@@ -148,7 +151,7 @@ struct ChangePinView: View {
     }
 
     private func save() {
-        guard current == PinStore.current else { error = .pinWrong; return }
+        guard !hasPin || current == PinStore.current else { error = .pinWrong; return }
         guard newPin == repeatPin else { error = .pinMismatch; return }
         PinStore.save(newPin)
         error = nil

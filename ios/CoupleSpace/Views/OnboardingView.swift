@@ -20,7 +20,7 @@ struct OnboardingView: View {
     private var pinValid: Bool { pin.count == 4 && pin == pinRepeat }
     private var pinMismatch: Bool { pinRepeat.count == 4 && pin.count == 4 && pin != pinRepeat }
     private var canContinue: Bool {
-        !trimmedName.isEmpty && (!joining || normalizedCode.count >= 4) && pinValid
+        !trimmedName.isEmpty && (joining ? normalizedCode.count >= 4 : pinValid)
     }
 
     var body: some View {
@@ -67,6 +67,7 @@ struct OnboardingView: View {
                             .font(.system(.title3, design: .monospaced))
                     }
 
+                    if !joining {
                     VStack(alignment: .leading, spacing: 10) {
                         CardLabel(text: loc.t(.createPin), symbol: "lock.fill")
                         pinField(loc.t(.createPin), text: $pin)
@@ -77,6 +78,7 @@ struct OnboardingView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(.top, 4)
+                    }
                 }
                 .glassCard()
 
@@ -129,7 +131,7 @@ struct OnboardingView: View {
 
     private func submit() {
         guard canContinue else { return }
-        PinStore.save(pin)
+        if !joining { PinStore.save(pin) }
         let roomId = joining ? normalizedCode : AppSession.generateRoomCode()
         store.connect(roomId: roomId)
         if !joining { store.createRoom() }
