@@ -21,6 +21,19 @@ struct SettingsSheet: View {
                         .onSubmit(saveName)
                 }
 
+                Section(loc.t(.relationshipSince)) {
+                    DatePicker(
+                        loc.t(.relationshipSince),
+                        selection: Binding(
+                            get: { store.meta.relationshipStartDate ?? Date() },
+                            set: { store.setRelationshipStart($0) }
+                        ),
+                        in: ...Date(),
+                        displayedComponents: .date
+                    )
+                    .environment(\.locale, loc.locale)
+                }
+
                 Section(loc.t(.language)) {
                     Picker(loc.t(.language), selection: $loc.language) {
                         ForEach(AppLanguage.allCases) { Text($0.shortLabel).tag($0) }

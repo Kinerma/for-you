@@ -14,6 +14,8 @@ final class RoomStore {
     private(set) var hug = HugPresence()
     private(set) var carePings: [CarePing] = []
     private(set) var guesses: [String: GuessEntry] = [:]
+    private(set) var latestInteraction: Interaction?
+    private(set) var dailyMoment: DailyMoment?
 
     private(set) var connectedRoomId: String?
     @ObservationIgnored private let backend: RoomBackend
@@ -29,7 +31,7 @@ final class RoomStore {
     func connect(roomId: String) {
         guard connectedRoomId != roomId else { return }
         connectedRoomId = roomId
-        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []; hug = HugPresence(); carePings = []; guesses = [:]
+        meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []; hug = HugPresence(); carePings = []; guesses = [:]; latestInteraction = nil; dailyMoment = nil
         backend.connect(roomId: roomId) { [weak self] update in
             DispatchQueue.main.async { self?.apply(update) }
         }
@@ -39,7 +41,7 @@ final class RoomStore {
         backend.disconnect()
         connectedRoomId = nil
         meta = RoomMeta(); moods = [:]; answers = [:]; events = []; ideas = []; coupons = []; swipeSessions = []
-        hug = HugPresence(); carePings = []; guesses = [:]
+        hug = HugPresence(); carePings = []; guesses = [:]; latestInteraction = nil; dailyMoment = nil
     }
 
     private func apply(_ update: RoomUpdate) {
@@ -58,6 +60,8 @@ final class RoomStore {
         case .guesses(let value):
             guesses = Dictionary(uniqueKeysWithValues: value.map { ($0.id, $0) })
             completeFinishedGuesses()
+        case .interaction(let value): latestInteraction = value
+        case .dailyMoment(let value): dailyMoment = value
         }
     }
 
@@ -71,8 +75,41 @@ final class RoomStore {
 
     func setPinHash(_ hash: String) { backend.setPinHash(hash) }
 
-    func setMood(emoji: String, text: String, status: MoodStatus? = nil, for partner: Partner) {
-        backend.setMood(Mood(emoji: emoji, text: text, updatedAt: Date(), status: status?.rawValue), for: partner)
+    func setMood(emoji: String, text: String, status: MoodStatus? = nil,
+                 energy: Int? = nil, need: NeedTag? = nil, for partner: Partner) {
+        backend.setMood(Mood(emoji: emoji, text: text, updatedAt: Date(), status: status?.rawValue,
+                             energyLevel: energy, needTag: need?.rawValue), for: partner)
+    }
+
+    // MARK: Home (обновлённая главная)
+
+    func setRelationshipStart(_ date: Date) { backend.setRelationshipStart(date) }
+
+    /// Импульс поддержки по тапу на карточку партнёра: лепестки у партнёра + пуш.
+    func sendSupportPulse(from partner: Partner) {
+        backend.sendCarePing(CarePing(type: .sakura, senderId: partner))
+        backend.sendInteraction(Interaction(type: .supportPetals, fromPartnerId: partner, createdAt: Date()))
+    }
+
+    func sendHugInteraction(from partner: Partner) {
+        backend.sendInteraction(Interaction(type: .hug, fromPartnerId: partner, createdAt: Date()))
+    }
+
+    func setDailyMoment(type: DailyMoment.Kind, imageBase64: String, caption: String, by partner: Partner) {
+        backend.setDailyMoment(DailyMoment(type: type, imageBase64: imageBase64, caption: caption,
+                                           authorId: partner, updatedAt: Date()))
+    }
+
+    /// Вопрос для карточки «Вопрос дня»: сначала тот, на который партнёр уже ответил, а я — нет.
+    func homeQuestion(me: Partner) -> (question: QuizQuestion, partnerAnswered: Bool)? {
+        let pending = QuestionBank.shared.questions.filter { myAnswer($0, me: me) == nil }
+        if let waiting = pending
+            .filter({ answers[$0.id]?.answer(for: me.other) != nil })
+            .sorted(by: { (answers[$0.id]?.updatedAt ?? .distantPast) > (answers[$1.id]?.updatedAt ?? .distantPast) })
+            .first {
+            return (waiting, true)
+        }
+        return questionOfTheDay(me: me).map { ($0, false) }
     }
 
     // MARK: Hug & care (ТЗ v2, 1.2–1.3)

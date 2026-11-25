@@ -31,6 +31,7 @@ final class AppSession {
     var isLocked = true
     var selectedTab: AppTab = .home
     var focusedQuestionId: String?
+    var focusedEventId: String?
     var showSettings = false
 
     init() {

@@ -37,6 +37,21 @@ struct CalendarView: View {
             WheelOfFortuneView()
         }
         .sensoryFeedback(.success, trigger: scheduledTrigger)
+        .onAppear(perform: consumeFocusedEvent)
+        .onChange(of: session.focusedEventId) { _, _ in consumeFocusedEvent() }
+    }
+
+    /// Переход с главной («умный отсчёт»): выбрать день события и открыть его.
+    private func consumeFocusedEvent() {
+        guard let id = session.focusedEventId else { return }
+        session.focusedEventId = nil
+        guard let event = store.events.first(where: { $0.id == id }), let date = DayKey.date(event.date) else { return }
+        let cal = loc.calendar
+        withAnimation {
+            vm.selectedDate = date
+            vm.month = cal.dateInterval(of: .month, for: date)?.start ?? date
+        }
+        planEditor = .edit(event)
     }
 
     // MARK: Month grid

@@ -11,6 +11,8 @@ enum RoomUpdate {
     case hug(HugPresence)
     case carePings([CarePing])
     case guesses([GuessEntry])
+    case interaction(Interaction?)
+    case dailyMoment(DailyMoment?)
 }
 
 /// Отписка от слушателя (например, комментариев одной карточки).
@@ -62,4 +64,9 @@ protocol RoomBackend: AnyObject {
     // Угадайка
     func submitGuess(_ entry: GuessEntry, selfAnswer: String, guess: String, for partner: Partner)
     func completeGuess(id: String, stars: Int)
+
+    // Главная
+    func setRelationshipStart(_ date: Date)
+    func sendInteraction(_ interaction: Interaction)
+    func setDailyMoment(_ moment: DailyMoment)
 }

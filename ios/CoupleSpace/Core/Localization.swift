@@ -145,6 +145,12 @@ enum L: String {
     case guessTab, guessTitle, guessRoundOfWeek, guessStepSelf, guessStepPartner, guessWaiting
     case guessResults, guessRoundStars, guessStarsTotal, guessRight, guessWrong, guessNextRound
     case rewards, rewardsHint, starsToUnlock, iconClassic, iconSakura, iconLavender, iconNight, iconInUse, useIcon
+    // Обновлённая главная
+    case goodDay, cozyEvening, goodNight, setOurDate, whenTogether, relationshipSince
+    case myMood, energy, needTitle, needHugs, needTreat, needTalk, needQuiet, needTogether
+    case tapToCare, careSentToast, hugSent, hugReceived, swipeIdeas, hoursShort
+    case momentTitle, momentEmpty, momentPhoto, momentSketch, momentPick, momentCaption
+    case eraser, undo, clear, partnerAnsweredBadge
 
     struct Entry { let ru: String; let zh: String; let en: String }
 
@@ -334,6 +340,36 @@ enum L: String {
         .iconNight: .init(ru: "Ночная", zh: "夜空", en: "Night"),
         .iconInUse: .init(ru: "Сейчас стоит", zh: "使用中", en: "In use"),
         .useIcon: .init(ru: "Поставить", zh: "使用", en: "Use"),
+        .goodDay: .init(ru: "Хорошего дня", zh: "祝你有美好的一天", en: "Have a lovely day"),
+        .cozyEvening: .init(ru: "Уютного вечера", zh: "晚上好", en: "Cozy evening"),
+        .goodNight: .init(ru: "Доброй ночи", zh: "晚安", en: "Good night"),
+        .setOurDate: .init(ru: "Указать нашу дату", zh: "設定我們的紀念日", en: "Set our date"),
+        .whenTogether: .init(ru: "С какого дня мы вместе?", zh: "我們是哪天開始在一起的？", en: "When did we get together?"),
+        .relationshipSince: .init(ru: "Вместе с", zh: "在一起的日子", en: "Together since"),
+        .myMood: .init(ru: "Моё настроение", zh: "我的心情", en: "My mood"),
+        .energy: .init(ru: "Заряд", zh: "電量", en: "Energy"),
+        .needTitle: .init(ru: "Что мне сейчас нужно", zh: "我現在需要", en: "What I need now"),
+        .needHugs: .init(ru: "Обнимашки", zh: "抱抱", en: "Hugs"),
+        .needTreat: .init(ru: "Вкусняшку", zh: "好吃的", en: "A treat"),
+        .needTalk: .init(ru: "Поболтать", zh: "聊聊天", en: "A chat"),
+        .needQuiet: .init(ru: "Тишины", zh: "安靜一下", en: "Some quiet"),
+        .needTogether: .init(ru: "Просто рядом", zh: "陪著我", en: "Just be near"),
+        .tapToCare: .init(ru: "Нажми — отправить заботу", zh: "點一下送上關心", en: "Tap to send some care"),
+        .careSentToast: .init(ru: "Забота отправлена 🌸", zh: "已送出關心 🌸", en: "Care sent 🌸"),
+        .hugSent: .init(ru: "Объятие отправлено 🤗", zh: "已送出擁抱 🤗", en: "Hug sent 🤗"),
+        .hugReceived: .init(ru: "обнимает тебя 🤗", zh: "抱住了你 🤗", en: "is hugging you 🤗"),
+        .swipeIdeas: .init(ru: "Свайпнуть идеи", zh: "滑一滑點子", en: "Swipe ideas"),
+        .hoursShort: .init(ru: "ч", zh: "小時", en: "h"),
+        .momentTitle: .init(ru: "Момент дня", zh: "今日時刻", en: "Moment of the day"),
+        .momentEmpty: .init(ru: "Поделись фото или рисунком", zh: "分享一張相片或塗鴉", en: "Share a photo or a doodle"),
+        .momentPhoto: .init(ru: "Фото", zh: "相片", en: "Photo"),
+        .momentSketch: .init(ru: "Рисунок", zh: "塗鴉", en: "Sketch"),
+        .momentPick: .init(ru: "Выбрать фото", zh: "揀相片", en: "Choose a photo"),
+        .momentCaption: .init(ru: "Подпись", zh: "說明", en: "Caption"),
+        .eraser: .init(ru: "Ластик", zh: "橡皮擦", en: "Eraser"),
+        .undo: .init(ru: "Отменить", zh: "復原", en: "Undo"),
+        .clear: .init(ru: "Очистить", zh: "清除", en: "Clear"),
+        .partnerAnsweredBadge: .init(ru: "Уже есть ответ — твоя очередь", zh: "對方已經回答了，到你了", en: "They've answered — your turn"),
         .pinsDontMatch: .init(ru: "Коды не совпадают", zh: "兩次輸入的 PIN 碼不一樣", en: "The PINs don't match"),
     ]
 }

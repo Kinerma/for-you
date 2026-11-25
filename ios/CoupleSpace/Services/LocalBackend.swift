@@ -16,6 +16,8 @@ final class LocalBackend: RoomBackend {
         var hug = HugPresence()
         var carePings: [String: CarePing] = [:]
         var guesses: [String: GuessEntry] = [:]
+        var interaction: Interaction?
+        var dailyMoment: DailyMoment?
     }
 
     private var state = State()
@@ -153,6 +155,10 @@ final class LocalBackend: RoomBackend {
         commit()
     }
 
+    func setRelationshipStart(_ date: Date) { state.meta.relationshipStartDate = date; commit() }
+    func sendInteraction(_ interaction: Interaction) { state.interaction = interaction; commit() }
+    func setDailyMoment(_ moment: DailyMoment) { state.dailyMoment = moment; commit() }
+
     func completeGuess(id: String, stars: Int) {
         state.guesses[id]?.starsEarned = stars
         state.guesses[id]?.completedAt = Date()
@@ -195,6 +201,8 @@ final class LocalBackend: RoomBackend {
         onUpdate(.hug(state.hug))
         onUpdate(.carePings(Array(state.carePings.values)))
         onUpdate(.guesses(Array(state.guesses.values)))
+        onUpdate(.interaction(state.interaction))
+        onUpdate(.dailyMoment(state.dailyMoment))
     }
 
     private func fileURL(_ roomId: String) -> URL {

@@ -44,9 +44,14 @@ const TEXT = {
     en: (n, t) => ["It's a match! 💞", `You both want: ${t}`],
   },
   hug: {
-    ru: (n, t) => ["Тебя обнимают прямо сейчас 🤗", `${n} держит кружок — обними в ответ`],
-    zh_Hant: (n, t) => ["有人正在抱住你 🤗", `${n} 按住了圓圈，快點回抱吧`],
-    en: (n, t) => ["You're being hugged right now 🤗", `${n} is holding the circle — hug back`],
+    ru: (n, t) => ["Тебя обняли 🤗", `${n} обнимает тебя — открой приложение и обними в ответ`],
+    zh_Hant: (n, t) => ["有人抱住了你 🤗", `${n} 抱住了你，打開 App 回抱吧`],
+    en: (n, t) => ["You've been hugged 🤗", `${n} is hugging you — open the app to hug back`],
+  },
+  moment: {
+    ru: (n, t) => [`${n} поделился(лась) моментом дня 📸`, t || "Загляни на главную"],
+    zh_Hant: (n, t) => [`${n} 分享了今日時刻 📸`, t || "去主頁看看"],
+    en: (n, t) => [`${n} shared a moment 📸`, t || "Take a look on the home screen"],
   },
   care: {
     ru: (n, t) => [`${n} шлёт тебе поддержку ${t}`, "Открой приложение 🤍"],
@@ -141,21 +146,18 @@ exports.onSwipeMatch = onDocumentWritten("rooms/{roomId}/swipeSessions/{sessionI
   await Promise.all([notify(roomId, "A", "match", title), notify(roomId, "B", "match", title)]);
 });
 
-// v2: «Обнять на расстоянии» — пуш, когда партнёр начал удерживать кружок (не чаще раза в минуту).
-exports.onHugPresence = onDocumentWritten("rooms/{roomId}/presence/hug", async (event) => {
-  const before = event.data.before.exists ? event.data.before.data() : {};
+// Главная: объятие (удержание кнопки «Обнять» ~1.5 сек) — пуш «Тебя обняли».
+exports.onInteraction = onDocumentWritten("rooms/{roomId}/interactions/latest", async (event) => {
   const after = event.data.after.exists ? event.data.after.data() : null;
-  if (!after) return;
-  const lastPush = after.lastPushAt ? after.lastPushAt.toMillis() : 0;
-  if (Date.now() - lastPush < 60 * 1000) return;
-  for (const p of ["A", "B"]) {
-    const key = `partner${p}Holding`;
-    if (after[key] && !before[key] && after.lastTriggeredBy === p) {
-      await notify(event.params.roomId, p, "hug");
-      await event.data.after.ref.update({ lastPushAt: FieldValue.serverTimestamp() });
-      return;
-    }
-  }
+  if (!after || after.type !== "hug" || !after.fromPartnerId) return;
+  await notify(event.params.roomId, after.fromPartnerId, "hug");
+});
+
+// Главная: новый «момент дня» (фото или рисунок).
+exports.onDailyMoment = onDocumentWritten("rooms/{roomId}/dailyMoment/current", async (event) => {
+  const after = event.data.after.exists ? event.data.after.data() : null;
+  if (!after || !after.authorId) return;
+  await notify(event.params.roomId, after.authorId, "moment", after.caption || "");
 });
 
 // v2: «Отправить поддержку».

@@ -51,7 +51,8 @@ final class FirestoreBackend: RoomBackend {
                 partnerBName: meta["partnerBName"] as? String,
                 langA: meta["langA"] as? String,
                 langB: meta["langB"] as? String,
-                pinHash: meta["pinHash"] as? String
+                pinHash: meta["pinHash"] as? String,
+                relationshipStartDate: (meta["relationshipStartDate"] as? Timestamp)?.dateValue()
             )))
         })
 
@@ -62,9 +63,11 @@ final class FirestoreBackend: RoomBackend {
                 let d = doc.data(with: .estimate)
                 result[partner] = Mood(
                     emoji: d["emoji"] as? String ?? "",
-                    text: d["text"] as? String ?? "",
+                    text: d["statusText"] as? String ?? d["text"] as? String ?? "",
                     updatedAt: (d["updatedAt"] as? Timestamp)?.dateValue() ?? Date(),
-                    status: d["status"] as? String
+                    status: d["status"] as? String,
+                    energyLevel: d["energyLevel"] as? Int,
+                    needTag: d["needTag"] as? String
                 )
             }
             onUpdate(.moods(result))
@@ -206,6 +209,34 @@ final class FirestoreBackend: RoomBackend {
             }
             onUpdate(.guesses(entries))
         })
+
+        listeners.append(ref.collection("interactions").document("latest").addSnapshotListener { snapshot, _ in
+            let d = snapshot?.data(with: .estimate) ?? [:]
+            guard let type = Interaction.Kind(rawValue: d["type"] as? String ?? ""),
+                  let from = Partner(rawValue: d["fromPartnerId"] as? String ?? "") else {
+                onUpdate(.interaction(nil)); return
+            }
+            onUpdate(.interaction(Interaction(
+                type: type, fromPartnerId: from,
+                createdAt: (d["createdAt"] as? Timestamp)?.dateValue() ?? Date()
+            )))
+        })
+
+        listeners.append(ref.collection("dailyMoment").document("current").addSnapshotListener { snapshot, _ in
+            let d = snapshot?.data(with: .estimate) ?? [:]
+            guard let type = DailyMoment.Kind(rawValue: d["type"] as? String ?? ""),
+                  let author = Partner(rawValue: d["authorId"] as? String ?? "") else {
+                onUpdate(.dailyMoment(nil)); return
+            }
+            onUpdate(.dailyMoment(DailyMoment(
+                type: type,
+                imageBase64: d["imageBase64"] as? String ?? "",
+                imageUrl: d["imageUrl"] as? String ?? "",
+                caption: d["caption"] as? String ?? "",
+                authorId: author,
+                updatedAt: (d["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
+            )))
+        })
     }
 
     // MARK: Writes
@@ -236,8 +267,11 @@ final class FirestoreBackend: RoomBackend {
         write {
             $0.collection("moods").document(partner.rawValue).setData([
                 "emoji": mood.emoji,
-                "text": mood.text,
+                "statusText": mood.text,
                 "status": mood.status.map { $0 as Any } ?? NSNull(),
+                "moodType": (mood.moodType?.rawValue).map { $0 as Any } ?? NSNull(),
+                "energyLevel": mood.energyLevel.map { $0 as Any } ?? NSNull(),
+                "needTag": mood.needTag.map { $0 as Any } ?? NSNull(),
                 "updatedAt": FieldValue.serverTimestamp(),
             ])
         }
@@ -413,6 +447,35 @@ final class FirestoreBackend: RoomBackend {
                 "selfAnswer\(partner.rawValue)": selfAnswer,
                 "guessPartner\(partner.rawValue)": guess,
             ], merge: true)
+        }
+    }
+
+    // MARK: Home
+
+    func setRelationshipStart(_ date: Date) {
+        write { $0.setData(["meta": ["relationshipStartDate": Timestamp(date: date)]], merge: true) }
+    }
+
+    func sendInteraction(_ interaction: Interaction) {
+        write {
+            $0.collection("interactions").document("latest").setData([
+                "type": interaction.type.rawValue,
+                "fromPartnerId": interaction.fromPartnerId.rawValue,
+                "createdAt": FieldValue.serverTimestamp(),
+            ])
+        }
+    }
+
+    func setDailyMoment(_ moment: DailyMoment) {
+        write {
+            $0.collection("dailyMoment").document("current").setData([
+                "type": moment.type.rawValue,
+                "imageBase64": moment.imageBase64,
+                "imageUrl": moment.imageUrl,
+                "caption": moment.caption,
+                "authorId": moment.authorId.rawValue,
+                "updatedAt": FieldValue.serverTimestamp(),
+            ])
         }
     }
 

@@ -247,8 +247,12 @@ struct Mood: Codable, Hashable {
     var text: String
     var updatedAt: Date
     var status: String? = nil   // ключ MoodStatus
+    var energyLevel: Int? = nil // 0...100 — «заряд батарейки»
+    var needTag: String? = nil  // ключ NeedTag
 
     var moodStatus: MoodStatus? { status.flatMap(MoodStatus.init(rawValue:)) }
+    var need: NeedTag? { needTag.flatMap(NeedTag.init(rawValue:)) }
+    var moodType: MoodType? { moodStatus?.moodType }
 
     static let choices = ["😊", "🥰", "😌", "🥳", "😴", "🤔", "😢", "😤", "🤒", "🍵", "💪", "🌧️", "✨", "🫶", "🍜", "📚"]
 }
@@ -329,6 +333,78 @@ enum MoodStatus: String, CaseIterable, Identifiable, Codable {
         case (.sick, .en): return "Not feeling well"
         }
     }
+}
+
+/// Тип настроения для цвета фона главной (ТЗ главной, раздел 1).
+enum MoodType: String, Codable {
+    case happy, tired, romantic, calm
+
+    /// Три акварельных пятна фона.
+    var blobs: [Color] {
+        switch self {
+        case .happy: return [Color(hex: 0xFAD4C0), Palette.sakura, Palette.champagne]
+        case .tired: return [Palette.lavender, Color(hex: 0xD9D2EE), Color(hex: 0xEDE7F6)]
+        case .romantic: return [Color(hex: 0xEBC1CF), Color(hex: 0xF2CCD8), Palette.sakura]
+        case .calm: return [Color(hex: 0xD5EBE2), Color(hex: 0xFBF3E4), Color(hex: 0xE3F1EA)]
+        }
+    }
+}
+
+extension MoodStatus {
+    var moodType: MoodType {
+        switch self {
+        case .happy, .busy: return .happy
+        case .lovey, .missing: return .romantic
+        case .calm: return .calm
+        case .tired, .stressed, .sad, .sick: return .tired
+        }
+    }
+}
+
+/// «Что мне сейчас нужно».
+enum NeedTag: String, CaseIterable, Identifiable, Codable {
+    case hugs, treat, talk, quiet, together
+
+    var id: String { rawValue }
+
+    var emoji: String {
+        switch self {
+        case .hugs: return "🤗"
+        case .treat: return "🍰"
+        case .talk: return "💬"
+        case .quiet: return "🌙"
+        case .together: return "🫶"
+        }
+    }
+
+    var titleKey: L {
+        switch self {
+        case .hugs: return .needHugs
+        case .treat: return .needTreat
+        case .talk: return .needTalk
+        case .quiet: return .needQuiet
+        case .together: return .needTogether
+        }
+    }
+}
+
+/// rooms/{roomId}/interactions/latest — последний «импульс» (объятие или лепестки).
+struct Interaction: Codable, Hashable {
+    enum Kind: String, Codable { case hug, supportPetals = "support_petals" }
+    var type: Kind
+    var fromPartnerId: Partner
+    var createdAt: Date
+}
+
+/// rooms/{roomId}/dailyMoment/current — полароид / рисунок дня.
+struct DailyMoment: Codable, Hashable {
+    enum Kind: String, Codable { case photo, sketch }
+    var type: Kind
+    var imageBase64: String     // сжатый JPEG/PNG; imageUrl зарезервирован под Firebase Storage
+    var imageUrl: String = ""
+    var caption: String
+    var authorId: Partner
+    var updatedAt: Date
 }
 
 /// rooms/{roomId}/carePings/{pingId}
@@ -432,6 +508,15 @@ struct RoomMeta: Codable, Hashable {
     var langA: String?
     var langB: String?
     var pinHash: String?
+    var relationshipStartDate: Date?
+
+    /// «Мы вместе: N дней» — считая первый день за первый.
+    var daysTogether: Int? {
+        guard let start = relationshipStartDate else { return nil }
+        let cal = Calendar.current
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: start), to: cal.startOfDay(for: Date())).day ?? 0
+        return max(days + 1, 1)
+    }
 
     func name(for partner: Partner) -> String? {
         let value = partner == .a ? partnerAName : partnerBName

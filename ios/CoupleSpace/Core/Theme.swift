@@ -41,6 +41,13 @@ enum Palette {
 // MARK: - Watercolor background
 
 struct WatercolorBackground: View {
+    /// Оттенок по настроению партнёра (на главной). nil — стандартная пастель.
+    var tint: MoodType? = nil
+
+    private var colors: [Color] {
+        tint?.blobs ?? [Palette.sakura, Palette.lavender, Palette.champagne]
+    }
+
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width
@@ -48,23 +55,24 @@ struct WatercolorBackground: View {
             ZStack {
                 Palette.background
                 Circle()
-                    .fill(Palette.sakura)
+                    .fill(colors[0])
                     .frame(width: w * 0.9)
                     .position(x: w * 0.1, y: h * 0.12)
                 Circle()
-                    .fill(Palette.lavender)
+                    .fill(colors[1])
                     .frame(width: w * 0.85)
                     .position(x: w * 0.95, y: h * 0.38)
                 Circle()
-                    .fill(Palette.champagne)
+                    .fill(colors[2])
                     .frame(width: w * 1.0)
                     .position(x: w * 0.25, y: h * 0.78)
                 Circle()
-                    .fill(Palette.sakura.opacity(0.7))
+                    .fill(colors[0].opacity(0.7))
                     .frame(width: w * 0.6)
                     .position(x: w * 0.9, y: h * 0.95)
             }
             .blur(radius: 70)
+            .animation(.easeInOut(duration: 1.2), value: tint)
         }
         .ignoresSafeArea()
     }
