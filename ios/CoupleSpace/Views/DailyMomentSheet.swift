@@ -3,9 +3,13 @@ import PhotosUI
 import UIKit
 
 /// Сжатие и декодирование картинки «момента дня».
-/// Пока храним сжатый JPEG прямо в Firestore (base64, ~50–150 КБ); поле imageUrl оставлено под Firebase Storage.
+/// Фото уходят в Firebase Storage (imageUrl), скетчи — сжатым base64 в документе.
 enum MomentImage {
     static func encode(_ image: UIImage, maxSide: CGFloat = 640, quality: CGFloat = 0.6) -> String? {
+        jpegData(image, maxSide: maxSide, quality: quality)?.base64EncodedString()
+    }
+
+    static func jpegData(_ image: UIImage, maxSide: CGFloat, quality: CGFloat) -> Data? {
         let scale = min(1, maxSide / max(image.size.width, image.size.height))
         let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)
         let format = UIGraphicsImageRendererFormat()
@@ -16,7 +20,7 @@ enum MomentImage {
             UIRectFill(CGRect(origin: .zero, size: size))
             image.draw(in: CGRect(origin: .zero, size: size))
         }
-        return resized.jpegData(compressionQuality: quality)?.base64EncodedString()
+        return resized.jpegData(compressionQuality: quality)
     }
 
     static func decode(_ base64: String) -> UIImage? {
@@ -40,6 +44,8 @@ struct DailyMomentSheet: View {
     @State private var strokes: [SketchStroke] = []
     @State private var caption = ""
     @State private var sent = 0
+    @State private var uploading = false
+    @State private var failed = false
 
     private var canSend: Bool {
         mode == .photo ? photo != nil : !strokes.isEmpty
@@ -64,6 +70,18 @@ struct DailyMomentSheet: View {
                         .onChange(of: caption) { _, value in
                             if value.count > 60 { caption = String(value.prefix(60)) }
                         }
+
+                    if uploading {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                            Text(loc.t(.momentUploading)).font(.appSubheadline)
+                        }
+                        .foregroundStyle(Palette.inkSoft)
+                    } else if failed {
+                        Text(loc.t(.momentUploadFailed))
+                            .font(.appSubheadline)
+                            .foregroundStyle(Palette.rose)
+                    }
                 }
                 .padding(20)
             }
@@ -78,7 +96,7 @@ struct DailyMomentSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(loc.t(.quizSend), action: send)
                         .fontWeight(.semibold)
-                        .disabled(!canSend)
+                        .disabled(!canSend || uploading)
                 }
             }
             .sensoryFeedback(.success, trigger: sent)
@@ -120,23 +138,29 @@ struct DailyMomentSheet: View {
     }
 
     private func send() {
-        let image: UIImage?
-        let type: DailyMoment.Kind
+        let text = caption.trimmingCharacters(in: .whitespacesAndNewlines)
         switch mode {
         case .photo:
-            image = photo
-            type = .photo
+            guard let photo else { return }
+            failed = false
+            uploading = true
+            store.setDailyPhoto(photo, caption: text, by: session.me) { ok in
+                uploading = false
+                if ok {
+                    sent += 1
+                    dismiss()
+                } else {
+                    failed = true
+                }
+            }
         case .sketch:
             let renderer = ImageRenderer(content: SketchRender(strokes: strokes).frame(width: 320, height: 320))
             renderer.scale = 2
-            image = renderer.uiImage
-            type = .sketch
+            guard let image = renderer.uiImage else { return }
+            store.setDailySketch(image, caption: text, by: session.me)
+            sent += 1
+            dismiss()
         }
-        guard let image, let base64 = MomentImage.encode(image) else { return }
-        store.setDailyMoment(type: type, imageBase64: base64,
-                             caption: caption.trimmingCharacters(in: .whitespacesAndNewlines), by: session.me)
-        sent += 1
-        dismiss()
     }
 }
 

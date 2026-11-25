@@ -1,6 +1,7 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseStorage
 
 /// Синхронизация в реальном времени через Firestore.
 /// Схема (ТЗ, раздел 6):
@@ -463,6 +464,31 @@ final class FirestoreBackend: RoomBackend {
                 "fromPartnerId": interaction.fromPartnerId.rawValue,
                 "createdAt": FieldValue.serverTimestamp(),
             ])
+        }
+    }
+
+    func uploadMomentPhoto(_ jpeg: Data, completion: @escaping (Result<String, Error>) -> Void) {
+        guard let roomId = room?.documentID else {
+            completion(.failure(StorageUnavailableError()))
+            return
+        }
+        signInIfNeeded {
+            let ref = Storage.storage().reference().child("rooms/\(roomId)/moments/\(UUID().uuidString).jpg")
+            let metadata = StorageMetadata()
+            metadata.contentType = "image/jpeg"
+            ref.putData(jpeg, metadata: metadata) { _, error in
+                if let error {
+                    completion(.failure(error))
+                    return
+                }
+                ref.downloadURL { url, error in
+                    if let url {
+                        completion(.success(url.absoluteString))
+                    } else {
+                        completion(.failure(error ?? StorageUnavailableError()))
+                    }
+                }
+            }
         }
     }
 

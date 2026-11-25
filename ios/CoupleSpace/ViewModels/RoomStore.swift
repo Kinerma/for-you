@@ -83,6 +83,13 @@ final class RoomStore {
 
     // MARK: Home (обновлённая главная)
 
+    /// Быстрое обновление заряда со шкалы на карточке — остальные поля настроения сохраняются.
+    func updateEnergy(_ level: Int, for partner: Partner) {
+        let current = moods[partner]
+        backend.setMood(Mood(emoji: current?.emoji ?? "😊", text: current?.text ?? "", updatedAt: Date(),
+                             status: current?.status, energyLevel: level, needTag: current?.needTag), for: partner)
+    }
+
     func setRelationshipStart(_ date: Date) { backend.setRelationshipStart(date) }
 
     /// Импульс поддержки по тапу на карточку партнёра: лепестки у партнёра + пуш.
@@ -95,9 +102,38 @@ final class RoomStore {
         backend.sendInteraction(Interaction(type: .hug, fromPartnerId: partner, createdAt: Date()))
     }
 
-    func setDailyMoment(type: DailyMoment.Kind, imageBase64: String, caption: String, by partner: Partner) {
-        backend.setDailyMoment(DailyMoment(type: type, imageBase64: imageBase64, caption: caption,
+    /// Скетч — сжатым base64 прямо в документе (как допускает ТЗ).
+    func setDailySketch(_ image: UIImage, caption: String, by partner: Partner) {
+        guard let base64 = MomentImage.encode(image) else { return }
+        backend.setDailyMoment(DailyMoment(type: .sketch, imageBase64: base64, caption: caption,
                                            authorId: partner, updatedAt: Date()))
+    }
+
+    /// Фото — в Firebase Storage, в документ кладём imageUrl.
+    /// Без Firebase (локальный режим) — сжатым base64, чтобы всё работало и на одном устройстве.
+    func setDailyPhoto(_ image: UIImage, caption: String, by partner: Partner,
+                       completion: @escaping (Bool) -> Void) {
+        guard backend.isCloud else {
+            guard let base64 = MomentImage.encode(image) else { completion(false); return }
+            backend.setDailyMoment(DailyMoment(type: .photo, imageBase64: base64, caption: caption,
+                                               authorId: partner, updatedAt: Date()))
+            completion(true)
+            return
+        }
+        guard let jpeg = MomentImage.jpegData(image, maxSide: 1280, quality: 0.75) else { completion(false); return }
+        backend.uploadMomentPhoto(jpeg) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let url):
+                    self?.backend.setDailyMoment(DailyMoment(type: .photo, imageBase64: "", imageUrl: url,
+                                                             caption: caption, authorId: partner, updatedAt: Date()))
+                    completion(true)
+                case .failure(let error):
+                    print("Photo upload failed:", error.localizedDescription)
+                    completion(false)
+                }
+            }
+        }
     }
 
     /// Вопрос для карточки «Вопрос дня»: сначала тот, на который партнёр уже ответил, а я — нет.

@@ -34,12 +34,13 @@ index.html               старый сайт-опрос (GitHub Pages), не �
 2. **Add app → iOS**, Bundle ID тот же, что в Xcode. Скачай `GoogleService-Info.plist` и положи в `ios/CoupleSpace/`. Папка синхронизируется с Xcode, добавлять файл вручную не нужно. В git он не попадёт.
 3. **Build → Authentication → Sign-in method** → включи **Anonymous**.
 4. **Build → Firestore Database → Create database**, регион `asia-east2 (Hong Kong)`.
-5. Залей правила (нужен [Firebase CLI](https://firebase.google.com/docs/cli)):
+5. **Build → Storage → Get started** (для фото «момента дня»). Новым проектам Firebase для Storage нужен тариф Blaze — он всё равно нужен для пушей.
+6. Залей правила (нужен [Firebase CLI](https://firebase.google.com/docs/cli)):
    ```bash
    npm install -g firebase-tools
    firebase login
    firebase use --add          # выбери свой проект
-   firebase deploy --only firestore:rules
+   firebase deploy --only firestore:rules,storage
    ```
 
 После этого запусти приложение на двух iPhone. На первом выбери «Создать комнату», на втором — «У меня есть код» и введи код из настроек первого.
@@ -78,7 +79,7 @@ index.html               старый сайт-опрос (GitHub Pages), не �
 
 ## Главная (Bento)
 
-ТЗ: [`docs/TZ-home.md`](docs/TZ-home.md). Шапка с «Мы вместе: N дней», фон по настроению партнёра, карточки настроения с зарядом и «что мне нужно», кнопка «Обнять» (удержание 1,5 сек), умный отсчёт, полароид дня (фото или рисунок), «Вопрос дня» с подсветкой, если партнёр уже ответил. Код: `Views/HomeView.swift`, `Views/DailyMomentSheet.swift`.
+ТЗ: [`docs/TZ-home.md`](docs/TZ-home.md). Шапка с «Мы вместе: N дней», фон по настроению партнёра, карточки настроения с зарядом и «что мне нужно», кнопка «Обнять» (удержание 1,5 сек), умный отсчёт, полароид дня (фото или рисунок), «Вопрос дня» с подсветкой, если партнёр уже ответил. Фото «момента дня» загружаются в Firebase Storage (`storage.rules`), скетчи хранятся сжатыми в документе. Код: `Views/HomeView.swift`, `Views/DailyMomentSheet.swift`.
 
 ## Интерактивные фичи v2
 

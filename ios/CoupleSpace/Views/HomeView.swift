@@ -130,17 +130,14 @@ struct HomeView: View {
 
     private var moodSection: some View {
         HStack(spacing: 12) {
-            Button { editingMood = true } label: {
-                MoodCard(title: loc.t(.myMood), owner: me, mood: store.moods[me],
-                         placeholder: loc.t(.moodTapToSet), footer: nil)
-            }
-            .buttonStyle(.plain)
+            MoodCard(title: loc.t(.myMood), owner: me, mood: store.moods[me],
+                     placeholder: loc.t(.moodTapToSet), footer: nil,
+                     onTap: { editingMood = true },
+                     onEnergyChange: { store.updateEnergy($0, for: me) })
 
-            Button(action: sendCare) {
-                MoodCard(title: partnerName, owner: me.other, mood: store.moods[me.other],
-                         placeholder: loc.t(.moodNotSet), footer: loc.t(.tapToCare))
-            }
-            .buttonStyle(.plain)
+            MoodCard(title: partnerName, owner: me.other, mood: store.moods[me.other],
+                     placeholder: loc.t(.moodNotSet), footer: loc.t(.tapToCare),
+                     onTap: sendCare)
         }
         .overlay {
             HugButton(pressing: $hugPressing, onStart: { hugRippleStart = Date() }, onComplete: hugCompleted)
@@ -206,6 +203,9 @@ struct MoodCard: View {
     let mood: Mood?
     let placeholder: String
     let footer: String?
+    var onTap: () -> Void = {}
+    /// Есть только у своей карточки: заряд меняется перетаскиванием прямо по шкале.
+    var onEnergyChange: ((Int) -> Void)? = nil
 
     @Environment(LocalizationManager.self) private var loc
 
@@ -234,7 +234,9 @@ struct MoodCard: View {
 
             Spacer(minLength: 0)
 
-            if let energy = mood?.energyLevel {
+            if let onEnergyChange {
+                EnergyBar(level: mood?.energyLevel ?? 70, onChange: onEnergyChange)
+            } else if let energy = mood?.energyLevel {
                 EnergyBar(level: energy)
             }
 
@@ -262,6 +264,9 @@ struct MoodCard: View {
                 .fill(mood?.moodStatus?.tint.opacity(0.55) ?? .clear)
         }
         .animation(.easeInOut(duration: 0.8), value: mood)
+        .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .onTapGesture(perform: onTap)
+        .accessibilityAddTraits(.isButton)
     }
 
     private var statusLine: String {
@@ -270,16 +275,21 @@ struct MoodCard: View {
     }
 }
 
-/// «Заряд батарейки» 0–100%.
+/// «Заряд батарейки» 0–100%. С `onChange` — это ползунок: тянешь пальцем прямо по шкале.
 struct EnergyBar: View {
     let level: Int
+    var onChange: ((Int) -> Void)? = nil
 
     @Environment(LocalizationManager.self) private var loc
+    @State private var dragLevel: Int?
+    @State private var tick = 0
 
-    private var fraction: Double { Double(min(max(level, 0), 100)) / 100 }
+    private var editable: Bool { onChange != nil }
+    private var shown: Int { dragLevel ?? level }
+    private var fraction: Double { Double(min(max(shown, 0), 100)) / 100 }
 
     private var color: Color {
-        switch level {
+        switch shown {
         case ..<30: return Palette.food
         case ..<65: return Color(hex: 0xF2C27B)
         default: return Palette.walk
@@ -287,25 +297,63 @@ struct EnergyBar: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 4) {
-                Image(systemName: level < 30 ? "battery.25" : (level < 65 ? "battery.50" : "battery.100"))
+                Image(systemName: shown < 30 ? "battery.25" : (shown < 65 ? "battery.50" : "battery.100"))
                     .font(.caption2)
-                Text("\(loc.t(.energy)) \(level)%")
+                Text("\(loc.t(.energy)) \(shown)%")
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .monospacedDigit()
             }
             .foregroundStyle(Palette.inkSoft)
+
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.7))
+                    Capsule().fill(Color.white.opacity(0.75))
                     Capsule()
                         .fill(LinearGradient(colors: [color.opacity(0.7), color], startPoint: .leading, endPoint: .trailing))
-                        .frame(width: max(6, geo.size.width * fraction))
+                        .frame(width: max(editable ? 14 : 6, geo.size.width * fraction))
+                    if editable {
+                        Circle()
+                            .fill(Color.white)
+                            .frame(width: 18, height: 18)
+                            .shadow(color: Palette.ink.opacity(0.2), radius: 2, y: 1)
+                            .offset(x: max(0, min(geo.size.width - 18, geo.size.width * fraction - 9)))
+                    }
                 }
+                .frame(maxHeight: .infinity)
+                .contentShape(Rectangle())
+                .highPriorityGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            guard editable else { return }
+                            let raw = value.location.x / max(geo.size.width, 1) * 100
+                            let stepped = Int((raw / 5).rounded()) * 5
+                            let newValue = min(max(stepped, 0), 100)
+                            if newValue != dragLevel { tick += 1 }
+                            dragLevel = newValue
+                        }
+                        .onEnded { _ in
+                            guard editable, let dragLevel else { return }
+                            onChange?(dragLevel)
+                            self.dragLevel = nil
+                        },
+                    including: editable ? .all : .none
+                )
             }
-            .frame(height: 7)
+            .frame(height: editable ? 18 : 7)
         }
+        .sensoryFeedback(.selection, trigger: tick)
         .accessibilityElement(children: .combine)
+        .accessibilityValue("\(shown)%")
+        .accessibilityAdjustableAction { direction in
+            guard let onChange else { return }
+            switch direction {
+            case .increment: onChange(min(level + 10, 100))
+            case .decrement: onChange(max(level - 10, 0))
+            @unknown default: break
+            }
+        }
     }
 }
 
@@ -482,48 +530,65 @@ struct DailyMomentCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 6) {
-                ZStack {
-                    Rectangle().fill(Palette.champagne.opacity(0.6))
-                    if let moment = store.dailyMoment, let image = MomentImage.decode(moment.imageBase64) {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                    } else {
-                        VStack(spacing: 6) {
-                            Image(systemName: "camera.fill").font(.title3)
-                            Text(loc.t(.momentEmpty))
-                                .font(.system(size: 11, design: .rounded))
-                                .multilineTextAlignment(.center)
-                        }
-                        .foregroundStyle(Palette.inkSoft)
-                        .padding(8)
-                    }
-                }
+            // Квадрат 1:1 как у соседней карточки; внутри — полароид с белой рамкой и подписью.
+            Color.clear
                 .aspectRatio(1, contentMode: .fit)
-                .clipped()
+                .overlay {
+                    VStack(spacing: 5) {
+                        photo
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .clipped()
 
-                VStack(spacing: 1) {
-                    Text(caption)
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .lineLimit(1)
-                    if let moment = store.dailyMoment {
-                        Text("\(store.partnerName(moment.authorId) ?? "") · \(moment.updatedAt.formatted(.relative(presentation: .named).locale(loc.locale)))")
-                            .font(.system(size: 9, design: .rounded))
-                            .foregroundStyle(Palette.inkSoft)
-                            .lineLimit(1)
+                        VStack(spacing: 1) {
+                            Text(caption)
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .lineLimit(1)
+                            if let moment = store.dailyMoment {
+                                Text("\(store.partnerName(moment.authorId) ?? "") · \(moment.updatedAt.formatted(.relative(presentation: .named).locale(loc.locale)))")
+                                    .font(.system(size: 9, design: .rounded))
+                                    .foregroundStyle(Palette.inkSoft)
+                                    .lineLimit(1)
+                            }
+                        }
                     }
+                    .padding(8)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .shadow(color: Palette.ink.opacity(0.15), radius: 10, y: 6)
+                    .rotationEffect(.degrees(2))
+                    .padding(6)
                 }
-                .padding(.bottom, 2)
-            }
-            .padding(8)
-            .background(Color.white, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-            .shadow(color: Palette.ink.opacity(0.15), radius: 10, y: 6)
-            .rotationEffect(.degrees(2))
-            .padding(6)
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private var photo: some View {
+        ZStack {
+            Rectangle().fill(Palette.champagne.opacity(0.6))
+            if let moment = store.dailyMoment, let url = URL(string: moment.imageUrl), !moment.imageUrl.isEmpty {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image): image.resizable().scaledToFill()
+                    case .failure: Image(systemName: "photo").foregroundStyle(Palette.inkSoft)
+                    default: ProgressView()
+                    }
+                }
+            } else if let moment = store.dailyMoment, let image = MomentImage.decode(moment.imageBase64) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                VStack(spacing: 6) {
+                    Image(systemName: "camera.fill").font(.title3)
+                    Text(loc.t(.momentEmpty))
+                        .font(.system(size: 11, design: .rounded))
+                        .multilineTextAlignment(.center)
+                }
+                .foregroundStyle(Palette.inkSoft)
+                .padding(8)
+            }
+        }
     }
 
     private var caption: String {

@@ -159,6 +159,11 @@ final class LocalBackend: RoomBackend {
     func sendInteraction(_ interaction: Interaction) { state.interaction = interaction; commit() }
     func setDailyMoment(_ moment: DailyMoment) { state.dailyMoment = moment; commit() }
 
+    /// В локальном режиме Storage нет — фото сохранится как base64 (см. RoomStore).
+    func uploadMomentPhoto(_ jpeg: Data, completion: @escaping (Result<String, Error>) -> Void) {
+        completion(.failure(StorageUnavailableError()))
+    }
+
     func completeGuess(id: String, stars: Int) {
         state.guesses[id]?.starsEarned = stars
         state.guesses[id]?.completedAt = Date()

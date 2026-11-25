@@ -69,4 +69,8 @@ protocol RoomBackend: AnyObject {
     func setRelationshipStart(_ date: Date)
     func sendInteraction(_ interaction: Interaction)
     func setDailyMoment(_ moment: DailyMoment)
+    /// Загрузка фото в Firebase Storage; результат — ссылка для imageUrl.
+    func uploadMomentPhoto(_ jpeg: Data, completion: @escaping (Result<String, Error>) -> Void)
 }
+
+struct StorageUnavailableError: Error {}

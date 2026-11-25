@@ -150,7 +150,7 @@ enum L: String {
     case myMood, energy, needTitle, needHugs, needTreat, needTalk, needQuiet, needTogether
     case tapToCare, careSentToast, hugSent, hugReceived, swipeIdeas, hoursShort
     case momentTitle, momentEmpty, momentPhoto, momentSketch, momentPick, momentCaption
-    case eraser, undo, clear, partnerAnsweredBadge
+    case eraser, undo, clear, partnerAnsweredBadge, momentUploading, momentUploadFailed
 
     struct Entry { let ru: String; let zh: String; let en: String }
 
@@ -370,6 +370,8 @@ enum L: String {
         .undo: .init(ru: "Отменить", zh: "復原", en: "Undo"),
         .clear: .init(ru: "Очистить", zh: "清除", en: "Clear"),
         .partnerAnsweredBadge: .init(ru: "Уже есть ответ — твоя очередь", zh: "對方已經回答了，到你了", en: "They've answered — your turn"),
+        .momentUploading: .init(ru: "Загружаю фото…", zh: "正在上傳相片…", en: "Uploading the photo…"),
+        .momentUploadFailed: .init(ru: "Не удалось загрузить фото. Проверь интернет и попробуй ещё раз.", zh: "相片上傳失敗，請檢查網絡再試一次。", en: "Couldn't upload the photo. Check your connection and try again."),
         .pinsDontMatch: .init(ru: "Коды не совпадают", zh: "兩次輸入的 PIN 碼不一樣", en: "The PINs don't match"),
     ]
 }
